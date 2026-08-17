@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEXUS-TWIN — Digital Twin Traffic Decision System</title>
+    <title>NEXUS-TWIN — Traffic Commander</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,243 +12,237 @@
 </head>
 <body>
     <div class="app-container">
-        <!-- Top Telemetry Header -->
-        <header class="app-header">
-            <div class="brand">
-                <div class="logo-icon">⚡</div>
-                <div>
-                    <h1>NEXUS-TWIN</h1>
-                    <span class="sub-title">Predictive Digital Twin Decision Engine</span>
+        
+        <!-- VIEW 1: GAME MENU -->
+        <div class="game-menu" id="gameMenu">
+            <header class="menu-header">
+                <div class="logo-icon menu-logo">⚡</div>
+                <h1>NEXUS-TWIN: Traffic Commander</h1>
+                <p class="sub-title" style="font-size: 16px; margin-top: 10px;">Take control of the 3-junction corridor. Manage congestion. Beat the AI.</p>
+            </header>
+            
+            <div class="menu-content" style="margin-top: 40px; width: 100%; max-width: 800px; display: flex; flex-direction: column; gap: 30px;">
+                <div class="form-group">
+                    <label style="text-align: left;">Commander Name</label>
+                    <input type="text" id="playerName" class="input-control" placeholder="Enter your name" value="Player1">
                 </div>
-            </div>
-            <div class="header-status">
-                <div class="status-badge online" id="statusBadge">
-                    <span class="pulse-dot"></span>
-                    <span id="statusText">SUMO v1.27.1 Connected</span>
+                
+                <div class="modes-grid" id="modesGrid">
+                    <div class="mode-card selected" data-mode="free_play">
+                        <div class="mode-icon" style="font-size: 32px;">🎯</div>
+                        <h3>Free Play</h3>
+                        <p style="font-size: 12px; color: var(--text-muted); margin-top: 10px;">Continuous corridor management. Events spawn dynamically. Score accumulates.</p>
+                    </div>
+                    <div class="mode-card" data-mode="challenge">
+                        <div class="mode-icon" style="font-size: 32px;">🏆</div>
+                        <h3>Challenge Mode</h3>
+                        <p style="font-size: 12px; color: var(--text-muted); margin-top: 10px;">Pre-defined congestion scenarios with pass/fail grading.</p>
+                        <select id="challengeSelector" class="input-control hidden" style="margin-top: 10px; width: 100%;">
+                            <option value="rush_hour">Rush Hour Surge</option>
+                            <option value="emergency">Emergency Dispatch</option>
+                            <option value="accident">Accident Blockage</option>
+                            <option value="cascade">Cascade Prevention</option>
+                        </select>
+                    </div>
+                    <div class="mode-card" data-mode="ai_duel">
+                        <div class="mode-icon" style="font-size: 32px;">🤖</div>
+                        <h3>AI Duel</h3>
+                        <p style="font-size: 12px; color: var(--text-muted); margin-top: 10px;">Compete head-to-head against the AI optimizer over 5-minute rounds.</p>
+                    </div>
                 </div>
-                <div class="system-time" id="sysTime">00:00:00</div>
+                
+                <div class="form-group" style="align-items: center;">
+                    <label>Difficulty</label>
+                    <div class="difficulty-selector" id="diffSelector">
+                        <button class="btn btn-diff active" data-diff="easy">Easy</button>
+                        <button class="btn btn-diff" data-diff="normal">Normal</button>
+                        <button class="btn btn-diff" data-diff="hard">Hard</button>
+                    </div>
+                </div>
+                
+                <button class="btn btn-primary btn-block commit-btn" id="btnStartGame" style="font-size: 18px; padding: 15px;">START GAME</button>
             </div>
-        </header>
+        </div>
 
-        <!-- Live Telemetry Ribbon -->
-        <section class="telemetry-ribbon">
-            <div class="telemetry-card">
-                <div class="label">AVG WAITING TIME</div>
-                <div class="value" id="metricDelay">0.24 <span class="unit">sec</span></div>
-                <div class="trend positive">↓ 76.2% vs Baseline</div>
-            </div>
-            <div class="telemetry-card">
-                <div class="label">MEAN QUEUE LENGTH</div>
-                <div class="value" id="metricQueue">30.0 <span class="unit">meters</span></div>
-                <div class="trend positive">↓ 63.0% vs Baseline</div>
-            </div>
-            <div class="telemetry-card">
-                <div class="label">AVERAGE SPEED</div>
-                <div class="value" id="metricSpeed">39.6 <span class="unit">km/h</span></div>
-                <div class="trend positive">↑ 11.3% vs Baseline</div>
-            </div>
-            <div class="telemetry-card">
-                <div class="label">ACTIVE VEHICLES</div>
-                <div class="value" id="metricVehicles">124 <span class="unit">veh</span></div>
-                <div class="trend neutral">1,001 Total Demand</div>
-            </div>
-            <div class="telemetry-card highlight">
-                <div class="label">PREDICTOR ACCURACY</div>
-                <div class="value" id="metricAccuracy">81.03%</div>
-                <div class="trend positive">0% Temporal Leakage</div>
-            </div>
-        </section>
+        <!-- VIEW 2: GAME DASHBOARD -->
+        <div class="game-dashboard hidden" id="gameDashboard">
+            
+            <!-- Game HUD Bar -->
+            <header class="game-hud app-header" style="margin-bottom: 0;">
+                <div class="hud-left brand">
+                    <div class="logo-icon">⚡</div>
+                    <div>
+                        <h1 id="hudPlayerName" style="font-size: 18px;">Player1</h1>
+                        <span class="sub-title badge mode-badge" id="hudModeBadge" style="background: var(--primary-glow); padding: 2px 6px; border-radius: 4px; color: white;">Free Play</span>
+                    </div>
+                </div>
+                <div class="hud-center" style="display: flex; align-items: center; gap: 20px;">
+                    <div class="score-container" style="text-align: center;">
+                        <span style="font-size: 12px; color: var(--text-muted); display: block;">SCORE</span>
+                        <span class="score-value" id="hudScore" style="font-size: 28px; font-weight: 800; color: var(--emerald); text-shadow: 0 0 10px var(--emerald-glow);">0</span>
+                    </div>
+                    <div class="streak-container hidden" id="hudStreak" style="display: flex; align-items: center; gap: 5px; background: rgba(245,158,11,0.2); padding: 5px 10px; border-radius: 20px; border: 1px solid var(--amber);">
+                        <span class="streak-flame">🔥</span>
+                        <span class="streak-text" id="hudStreakText" style="color: var(--amber); font-weight: bold;">x1.5</span>
+                    </div>
+                </div>
+                <div class="hud-right header-status">
+                    <div style="text-align: right; margin-right: 15px;">
+                        <span style="font-size: 12px; color: var(--text-muted); display: block;">SESSION TIME</span>
+                        <span class="session-timer system-time" id="hudTimer" style="font-size: 18px; color: white;">00:00</span>
+                    </div>
+                    <button class="btn btn-danger" id="btnEndGame">End Game</button>
+                </div>
+            </header>
 
-        <!-- Main Dashboard Grid -->
-        <main class="dashboard-grid">
-            <!-- Left Column: 2D Digital Twin Network Visualizer -->
-            <section class="panel twin-panel">
-                <div class="panel-header">
-                    <h2>Live 3-Junction Network Twin (J1 - J2 - J3)</h2>
-                    <div class="panel-actions">
-                        <button class="btn btn-sm" id="btnToggleLegend">Toggle Legend</button>
+            <!-- Event Alert Banner -->
+            <div class="event-alert hidden" id="eventAlert" style="margin-top: 15px; margin-bottom: 5px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div class="event-info" style="display: flex; align-items: center; gap: 10px;">
+                        <span class="event-icon" id="eventIcon" style="font-size: 24px;">⚠️</span>
+                        <span class="event-text" id="eventText" style="font-weight: bold; font-size: 16px;">Rush Hour Surge at J2!</span>
                     </div>
+                    <div class="ai-hint" id="aiHint" style="font-size: 12px; color: var(--primary); font-weight: bold; background: rgba(59,130,246,0.1); padding: 4px 8px; border-radius: 4px;">AI Suggests: Extend Green at J2</div>
                 </div>
-                <div class="canvas-container">
-                    <canvas id="networkCanvas" width="760" height="380"></canvas>
-                    <div class="canvas-overlay-legend" id="canvasLegend">
-                        <div><span class="dot green"></span> Green Phase (N-S / E-W)</div>
-                        <div><span class="dot red"></span> Red Phase</div>
-                        <div><span class="dot blue"></span> Dynamic Reassignment</div>
-                        <div><span class="dot emergency"></span> Emergency Preemption</div>
-                    </div>
+                <div class="timer-bar-container" style="margin-top: 8px;">
+                    <div class="timer-bar" id="eventTimerBar" style="width: 100%;"></div>
                 </div>
-                <div class="junction-cards-row">
-                    <div class="junction-mini-card" id="jcard-J1">
-                        <div class="jhead">Junction J1</div>
-                        <div class="jphase" id="j1-phase">N-S Green</div>
-                        <div class="jqueue">Queue: <strong id="j1-q">25.0m</strong></div>
-                    </div>
-                    <div class="junction-mini-card" id="jcard-J2">
-                        <div class="jhead">Junction J2 (Hub)</div>
-                        <div class="jphase" id="j2-phase">E-W Green</div>
-                        <div class="jqueue">Queue: <strong id="j2-q">35.0m</strong></div>
-                    </div>
-                    <div class="junction-mini-card" id="jcard-J3">
-                        <div class="jhead">Junction J3</div>
-                        <div class="jphase" id="j3-phase">N-S Green</div>
-                        <div class="jqueue">Queue: <strong id="j3-q">18.0m</strong></div>
-                    </div>
-                </div>
-            </section>
+            </div>
 
-            <!-- Right Column: AI Decision Engine & XAI Explanations -->
-            <section class="panel xai-panel">
-                <div class="panel-header">
-                    <h2>AI Decision Engine & Grounded XAI</h2>
-                    <span class="badge confidence-badge" id="confidenceBadge">88.4% Confidence</span>
-                </div>
+            <!-- Main Dashboard Grid -->
+            <main class="dashboard-grid" style="margin-top: 15px;">
+                <!-- Left: Canvas -->
+                <section class="panel twin-panel">
+                    <div class="panel-header">
+                        <h2>Live Network Twin (J1 - J2 - J3)</h2>
+                    </div>
+                    <div class="canvas-container">
+                        <canvas id="networkCanvas" width="760" height="380"></canvas>
+                        <div class="canvas-overlay-legend" id="canvasLegend">
+                            <div><span class="dot green"></span> Green</div>
+                            <div><span class="dot red"></span> Red</div>
+                        </div>
+                        <div class="canvas-score-overlay" id="canvasScoreOverlay" style="position: absolute; top: 10px; right: 10px; font-size: 24px; font-weight: bold; color: rgba(255,255,255,0.5); text-shadow: 0 0 5px black;"></div>
+                    </div>
+                </section>
 
-                <!-- Active Recommendation Card -->
-                <div class="recommendation-card">
-                    <div class="rec-title">RECOMMENDED STRATEGY</div>
-                    <div class="rec-action" id="recAction">Proactive Green Extend (20s) at Junction J2</div>
+                <!-- Right: Action Console -->
+                <section class="panel action-panel">
+                    <div class="panel-header">
+                        <h2>Commander Action Console</h2>
+                        <select id="actionTargetJunction" class="input-control" style="width: 120px;">
+                            <option value="J1">Target: J1</option>
+                            <option value="J2" selected>Target: J2</option>
+                            <option value="J3">Target: J3</option>
+                        </select>
+                    </div>
                     
-                    <div class="explanation-box">
-                        <div class="exp-row">
-                            <span class="exp-label">Reasoning:</span>
-                            <span class="exp-val" id="expReason">Predictor forecasts queue building to 35m at J2 in next 5 mins. Extending green phase by 20s reduces projected delay by 14.2%.</span>
+                    <div class="action-buttons-stack" id="actionStack">
+                        <div class="action-btn-group">
+                            <button class="action-btn strategy-btn" data-strategy="green_extend" style="border-left-color: var(--emerald);">
+                                <span class="strategy-icon">🟢</span> Extend Green Phase
+                            </button>
+                            <div class="strategy-options hidden" id="opt_green_extend">
+                                <label style="font-size: 12px; color: var(--text-muted);">Duration: <span id="val_green_extend">20s</span></label>
+                                <input type="range" id="param_green_extend" min="10" max="60" value="20" class="slider-control" style="width: 100%;">
+                            </div>
                         </div>
-                        <div class="exp-row">
-                            <span class="exp-label">Expected Impact:</span>
-                            <span class="exp-val" id="expImpact">Network delay drops from 0.25s to 0.21s; mean queue reduced by 4.5m; 0 spillback overflow events.</span>
+                        
+                        <div class="action-btn-group">
+                            <button class="action-btn strategy-btn" data-strategy="diversion" style="border-left-color: var(--primary);">
+                                <span class="strategy-icon">↪️</span> Divert Traffic
+                            </button>
+                            <div class="strategy-options hidden" id="opt_diversion">
+                                <label style="font-size: 12px; color: var(--text-muted);">Diversion Rate: <span id="val_diversion">30%</span></label>
+                                <input type="range" id="param_diversion" min="10" max="50" value="30" class="slider-control" style="width: 100%;">
+                            </div>
                         </div>
-                        <div class="exp-row">
-                            <span class="exp-label">Model Certitude:</span>
-                            <span class="exp-val" id="expConfidence">88.4% (Fused XGBoost Probability + Optimization Score Margin)</span>
+                        
+                        <div class="action-btn-group">
+                            <button class="action-btn strategy-btn" data-strategy="dynamic_lane" style="border-left-color: var(--cyan);">
+                                <span class="strategy-icon">🛣️</span> Open Dynamic Lane
+                            </button>
+                            <div class="strategy-options hidden" id="opt_dynamic_lane">
+                                <select id="param_dynamic_lane" class="input-control" style="width: 100%;">
+                                    <option value="J1">At J1</option>
+                                    <option value="J2">At J2</option>
+                                    <option value="J3">At J3</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="action-btn-group">
+                            <button class="action-btn strategy-btn" data-strategy="emergency_priority" style="border-left-color: var(--rose);">
+                                <span class="strategy-icon">🚨</span> Emergency Override
+                            </button>
+                        </div>
+                        
+                        <div class="action-btn-group">
+                            <button class="action-btn strategy-btn" data-strategy="do_nothing" style="border-left-color: var(--text-muted);">
+                                <span class="strategy-icon">⏸️</span> Do Nothing
+                            </button>
                         </div>
                     </div>
-                </div>
+                    
+                    <button class="btn btn-primary btn-block commit-btn" id="btnCommitMove" disabled style="margin-top: auto; height: 50px; font-size: 16px;">COMMIT MOVE</button>
+                </section>
+            </main>
 
-                <!-- Candidate Strategy Comparison Table -->
-                <div class="candidates-table-container">
-                    <h3>Candidate Futures Evaluation Matrix</h3>
-                    <table class="candidates-table">
-                        <thead>
-                            <tr>
-                                <th>Candidate Strategy</th>
-                                <th>Horizon</th>
-                                <th>Pred. Delay</th>
-                                <th>Pred. Queue</th>
-                                <th>Obj. Score</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="candidatesTableBody">
-                            <tr class="selected">
-                                <td><strong>Green Extend J2 (20s)</strong></td>
-                                <td>180s</td>
-                                <td>0.21s</td>
-                                <td>30.5m</td>
-                                <td>0.142</td>
-                                <td><span class="tag green">SELECTED</span></td>
-                            </tr>
-                            <tr>
-                                <td>Do Nothing (Baseline)</td>
-                                <td>180s</td>
-                                <td>0.25s</td>
-                                <td>35.0m</td>
-                                <td>0.198</td>
-                                <td><span class="tag gray">CONTROL</span></td>
-                            </tr>
-                            <tr>
-                                <td>Route Diversion via E1/E2</td>
-                                <td>180s</td>
-                                <td>0.23s</td>
-                                <td>32.9m</td>
-                                <td>0.174</td>
-                                <td><span class="tag blue">CANDIDATE</span></td>
-                            </tr>
-                            <tr>
-                                <td>Dynamic Lane Reassignment</td>
-                                <td>180s</td>
-                                <td>0.26s</td>
-                                <td>36.2m</td>
-                                <td>0.210</td>
-                                <td><span class="tag amber">REJECTED</span></td>
-                            </tr>
-                        </tbody>
-                    </table>
+            <!-- Bottom Grid -->
+            <section class="bottom-grid controls-grid" style="margin-top: 15px;">
+                <div class="panel">
+                    <div class="panel-header" style="margin-bottom: 10px;"><h2>Live Telemetry</h2></div>
+                    <div class="telemetry-ribbon" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div class="telemetry-card" style="padding: 10px;"><div class="label">AVG DELAY</div><div class="value" id="metricDelay" style="font-size: 18px;">0.24s</div></div>
+                        <div class="telemetry-card" style="padding: 10px;"><div class="label">MEAN QUEUE</div><div class="value" id="metricQueue" style="font-size: 18px;">30.0m</div></div>
+                        <div class="telemetry-card" style="padding: 10px;"><div class="label">AVG SPEED</div><div class="value" id="metricSpeed" style="font-size: 18px;">39.6km/h</div></div>
+                        <div class="telemetry-card" style="padding: 10px;"><div class="label">ACTIVE VEHICLES</div><div class="value" id="metricVehicles" style="font-size: 18px;">124</div></div>
+                    </div>
+                </div>
+                
+                <div class="badge-gallery panel">
+                    <div class="panel-header" style="margin-bottom: 10px;"><h2>Commander Badges</h2></div>
+                    <div class="badge-grid" id="badgeGrid" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <!-- Badges populated by JS -->
+                    </div>
                 </div>
             </section>
-        </main>
-
-        <!-- Bottom Controls Grid -->
-        <section class="controls-grid">
-            <!-- Interactive What-If Scenario Sandbox -->
-            <div class="panel sandbox-panel">
-                <div class="panel-header">
-                    <h2>Interactive What-If Scenario Sandbox</h2>
+        </div>
+        
+        <!-- Score Result Popup Modal -->
+        <div class="score-popup hidden" id="scorePopup">
+            <div class="score-popup-content">
+                <h2 id="popupResultTitle" class="popup-title" style="color: white; font-family: var(--font-heading); margin-bottom: 10px;">BEAT THE AI!</h2>
+                <div class="popup-points" id="popupPoints" style="font-size: 64px; font-weight: 800; margin-bottom: 15px;">+350</div>
+                
+                <div class="popup-breakdown" style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; text-align: left; margin-bottom: 20px;">
+                    <div id="popupBasePoints" style="font-weight: bold; color: var(--text-main); margin-bottom: 5px;">Base Points: +280</div>
+                    <ul id="popupMultipliers" style="color: var(--emerald); list-style: none; padding: 0; font-size: 14px;"></ul>
+                    <ul id="popupPenalties" style="color: var(--rose); list-style: none; padding: 0; font-size: 14px; margin-top: 5px;"></ul>
                 </div>
-                <form id="whatifForm" class="sandbox-form">
-                    <div class="form-group">
-                        <label>Target Junction</label>
-                        <select id="selJunction" class="input-control">
-                            <option value="J2">Junction J2 (Hub)</option>
-                            <option value="J1">Junction J1 (West)</option>
-                            <option value="J3">Junction J3 (East)</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Strategy Type</label>
-                        <select id="selStrategy" class="input-control">
-                            <option value="green_extend">Green Phase Extension</option>
-                            <option value="diversion">Dynamic Route Diversion</option>
-                            <option value="dynamic_lane">Dynamic Lane Reassignment</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Green Extension: <strong id="valExtension">20s</strong></label>
-                        <input type="range" id="rngExtension" min="10" max="60" value="20" class="slider-control">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Prediction Horizon: <strong id="valHorizon">180s</strong></label>
-                        <input type="range" id="rngHorizon" min="60" max="300" step="30" value="180" class="slider-control">
-                    </div>
-
-                    <div class="form-group full-width">
-                        <button type="submit" class="btn btn-primary btn-block" id="btnRunWhatIf">
-                            🚀 Run What-If Scenario Rollout
-                        </button>
-                    </div>
-                </form>
+                
+                <div class="popup-comparison" id="popupComparison" style="font-size: 16px; color: var(--text-muted); margin-bottom: 15px;">
+                    Your Score: 25.71 vs AI Score: 20.00
+                </div>
+                
+                <div class="popup-badges" id="popupNewBadges" style="display: flex; gap: 10px; justify-content: center;"></div>
             </div>
+        </div>
 
-            <!-- Emergency Vehicle Priority Console -->
-            <div class="panel emergency-panel">
-                <div class="panel-header">
-                    <h2>Emergency Priority Preemption Console</h2>
-                    <span class="badge danger-badge">High Priority</span>
-                </div>
-                <div class="emergency-content">
-                    <p class="emergency-desc">
-                        Simulates an incoming emergency vehicle (Ambulance / Fire Engine). Triggers instant preemption phase overrides along corridor J1–J2–J3.
-                    </p>
-                    <div class="form-group">
-                        <label>Emergency Vehicle ID</label>
-                        <input type="text" id="txtVehicleId" value="AMBULANCE_911" class="input-control">
-                    </div>
-                    <div class="form-group">
-                        <label>Target Corridor</label>
-                        <select id="selCorridor" class="input-control">
-                            <option value="J1-J2-J3">Corridor J1 → J2 → J3</option>
-                            <option value="J3-J2-J1">Corridor J3 → J2 → J1</option>
-                        </select>
-                    </div>
-                    <button class="btn btn-danger btn-block" id="btnDispatchEmergency">
-                        🚨 Dispatch Emergency Vehicle (Override Signals)
-                    </button>
-                </div>
+        <!-- Leaderboard Sidebar -->
+        <div class="leaderboard-sidebar" id="leaderboardSidebar">
+            <button class="toggle-leaderboard" id="btnToggleLeaderboard" style="font-size: 20px;">🏆</button>
+            <div class="leaderboard-content" style="padding: 20px;">
+                <h2 style="margin-bottom: 15px;">Leaderboard</h2>
+                <table class="candidates-table" style="width: 100%;">
+                    <thead><tr><th>Player</th><th>Score</th><th>Mode</th></tr></thead>
+                    <tbody id="leaderboardBody">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
             </div>
-        </section>
+        </div>
+        
     </div>
 
     <script src="app.js"></script>

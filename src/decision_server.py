@@ -21,6 +21,7 @@ from src.scenario_models import Strategy, ScenarioResult
 from src.strategy_generator import StrategyGenerator
 from src.strategy_optimizer import StrategyOptimizer
 from src.explainable_ai import ExplainableAIEngine
+from src.game_engine import GameEngine
 
 # Simulated / Live state provider for Web UI demo
 class SystemStateManager:
@@ -223,6 +224,7 @@ class SystemStateManager:
         }
 
 state_manager = SystemStateManager()
+game_engine = GameEngine()
 
 class DecisionRequestHandler(http.server.BaseHTTPRequestHandler):
     def _set_cors_headers(self):
@@ -269,6 +271,36 @@ class DecisionRequestHandler(http.server.BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(json.dumps(state_manager.history).encode("utf-8"))
 
+        elif path == "/api/game/state":
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self._set_cors_headers()
+            self.end_headers()
+            if game_engine.state:
+                self.wfile.write(json.dumps(game_engine.state.to_dict()).encode("utf-8"))
+            else:
+                self.wfile.write(json.dumps({"error": "No active game session"}).encode("utf-8"))
+
+        elif path == "/api/game/event":
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self._set_cors_headers()
+            self.end_headers()
+            traffic_state = state_manager.get_live_state()
+            event = game_engine.spawn_event(traffic_state)
+            if event:
+                self.wfile.write(json.dumps(event.to_dict()).encode("utf-8"))
+            else:
+                self.wfile.write(json.dumps({"event": None}).encode("utf-8"))
+
+        elif path == "/api/game/leaderboard":
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self._set_cors_headers()
+            self.end_headers()
+            lb = game_engine.get_leaderboard()
+            self.wfile.write(json.dumps(lb).encode("utf-8"))
+
         else:
             self.send_response(404)
             self.end_headers()
@@ -299,6 +331,53 @@ class DecisionRequestHandler(http.server.BaseHTTPRequestHandler):
             self.end_headers()
             res = state_manager.trigger_emergency_preemption(payload)
             self.wfile.write(json.dumps(res).encode("utf-8"))
+
+        elif path == "/api/game/start":
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self._set_cors_headers()
+            self.end_headers()
+            player_name = payload.get("player_name", "Commander")
+            mode = payload.get("mode", "free_play")
+            difficulty = payload.get("difficulty", "normal")
+            challenge_id = payload.get("challenge_id", None)
+            gs = game_engine.start_session(player_name, mode, difficulty, challenge_id)
+            self.wfile.write(json.dumps(gs.to_dict()).encode("utf-8"))
+
+        elif path == "/api/game/move":
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self._set_cors_headers()
+            self.end_headers()
+            strategy_type = payload.get("strategy_type", "do_nothing")
+            junction_id = payload.get("junction_id", "J2")
+            ext_seconds = float(payload.get("extension_seconds", 20.0))
+            div_pct = float(payload.get("diversion_percent", 25.0))
+            params = {"junction_id": junction_id}
+            if strategy_type == "green_extend":
+                params["extension_seconds"] = ext_seconds
+            elif strategy_type == "diversion":
+                params["from_edge"] = "J1_to_J2"
+                params["diversion_percent"] = div_pct
+            elif strategy_type == "emergency_priority":
+                params["corridor"] = "J1-J2-J3"
+                params["vehicle_id"] = "PLAYER_UNIT"
+            player_strategy = Strategy(
+                strategy_id=f"player_{strategy_type}_{junction_id}",
+                strategy_type=strategy_type,
+                parameters=params
+            )
+            traffic_state = state_manager.get_live_state()
+            move_result = game_engine.evaluate_player_move(player_strategy, traffic_state)
+            self.wfile.write(json.dumps(move_result.to_dict()).encode("utf-8"))
+
+        elif path == "/api/game/end":
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self._set_cors_headers()
+            self.end_headers()
+            summary = game_engine.end_session()
+            self.wfile.write(json.dumps(summary).encode("utf-8"))
 
         else:
             self.send_response(404)
