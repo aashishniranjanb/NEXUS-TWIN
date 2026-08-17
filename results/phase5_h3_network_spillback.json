@@ -1,0 +1,36 @@
+{
+    "local_optimization": {
+        "controller": [
+            "J1",
+            "J2",
+            "J3"
+        ],
+        "total_sim_steps": 1700,
+        "throughput_vehicles": 1001,
+        "avg_waiting_time_s": 2.39,
+        "avg_travel_time_s": 159.07,
+        "mean_queue_length_m": 116.2,
+        "max_queue_length_m": 502.5,
+        "avg_speed_kmh": 34.52,
+        "mode": "local_optimization",
+        "spillback_weight": 0.0,
+        "spillback_events_count": 0
+    },
+    "network_optimization": {
+        "controller": [
+            "J1",
+            "J2",
+            "J3"
+        ],
+        "total_sim_steps": 1700,
+        "throughput_vehicles": 1001,
+        "avg_waiting_time_s": 2.39,
+        "avg_travel_time_s": 159.07,
+        "mean_queue_length_m": 116.2,
+        "max_queue_length_m": 502.5,
+        "avg_speed_kmh": 34.52,
+        "mode": "network_optimization",
+        "spillback_weight": 1.5,
+        "spillback_events_count": 0
+    }
+}

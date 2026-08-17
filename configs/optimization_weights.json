@@ -1,0 +1,7 @@
+{
+    "delay": 1.0,
+    "queue": 1.0,
+    "spillback": 1.5,
+    "emissions": 0.5,
+    "emergency": 3.0
+}

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/netconvertConfiguration.xsd">
+    <input>
+        <node-files value="nexus.nod.xml"/>
+        <edge-files value="nexus.edg.xml"/>
+    </input>
+
+    <output>
+        <output-file value="nexus.net.xml"/>
+    </output>
+
+    <building_defaults>
+        <default.speed value="13.89"/>
+        <default.lanenumber value="2"/>
+    </building_defaults>
+
+    <junctions>
+        <no-turnarounds value="true"/>
+    </junctions>
+
+    <report>
+        <verbose value="true"/>
+    </report>
+</configuration>

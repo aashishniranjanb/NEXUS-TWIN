@@ -1,0 +1,62 @@
+{
+    "noise_0pct": {
+        "controller": [
+            "J1",
+            "J2",
+            "J3"
+        ],
+        "total_sim_steps": 1700,
+        "throughput_vehicles": 1001,
+        "avg_waiting_time_s": 2.39,
+        "avg_travel_time_s": 159.07,
+        "mean_queue_length_m": 116.2,
+        "max_queue_length_m": 502.5,
+        "avg_speed_kmh": 34.52,
+        "noise_level": 0.0
+    },
+    "noise_10pct": {
+        "controller": [
+            "J1",
+            "J2",
+            "J3"
+        ],
+        "total_sim_steps": 1700,
+        "throughput_vehicles": 1001,
+        "avg_waiting_time_s": 2.39,
+        "avg_travel_time_s": 159.07,
+        "mean_queue_length_m": 116.07,
+        "max_queue_length_m": 519.46,
+        "avg_speed_kmh": 34.52,
+        "noise_level": 0.1
+    },
+    "noise_20pct": {
+        "controller": [
+            "J1",
+            "J2",
+            "J3"
+        ],
+        "total_sim_steps": 1700,
+        "throughput_vehicles": 1001,
+        "avg_waiting_time_s": 2.39,
+        "avg_travel_time_s": 159.07,
+        "mean_queue_length_m": 115.93,
+        "max_queue_length_m": 566.41,
+        "avg_speed_kmh": 34.52,
+        "noise_level": 0.2
+    },
+    "noise_30pct": {
+        "controller": [
+            "J1",
+            "J2",
+            "J3"
+        ],
+        "total_sim_steps": 1700,
+        "throughput_vehicles": 1001,
+        "avg_waiting_time_s": 2.39,
+        "avg_travel_time_s": 159.07,
+        "mean_queue_length_m": 115.8,
+        "max_queue_length_m": 613.37,
+        "avg_speed_kmh": 34.52,
+        "noise_level": 0.3
+    }
+}

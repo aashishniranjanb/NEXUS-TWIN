@@ -1,0 +1,47 @@
+{
+    "fixed": {
+        "controller": [
+            "J1",
+            "J2",
+            "J3"
+        ],
+        "total_sim_steps": 1745,
+        "throughput_vehicles": 1001,
+        "avg_waiting_time_s": 1.01,
+        "avg_travel_time_s": 152.11,
+        "mean_queue_length_m": 81.09,
+        "max_queue_length_m": 420.0,
+        "avg_speed_kmh": 35.61,
+        "method": "fixed"
+    },
+    "reactive": {
+        "controller": [
+            "J1",
+            "J2",
+            "J3"
+        ],
+        "total_sim_steps": 1732,
+        "throughput_vehicles": 1001,
+        "avg_waiting_time_s": 0.25,
+        "avg_travel_time_s": 136.6,
+        "mean_queue_length_m": 29.65,
+        "max_queue_length_m": 150.0,
+        "avg_speed_kmh": 39.52,
+        "method": "reactive"
+    },
+    "nexustwin": {
+        "controller": [
+            "J1",
+            "J2",
+            "J3"
+        ],
+        "total_sim_steps": 1700,
+        "throughput_vehicles": 1001,
+        "avg_waiting_time_s": 0.24,
+        "avg_travel_time_s": 136.52,
+        "mean_queue_length_m": 30.0,
+        "max_queue_length_m": 157.5,
+        "avg_speed_kmh": 39.65,
+        "method": "nexustwin"
+    }
+}

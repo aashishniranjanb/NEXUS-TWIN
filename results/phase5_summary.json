@@ -1,0 +1,217 @@
+{
+    "timestamp": "2026-08-16 23:14:23",
+    "status": "COMPLETED",
+    "h1_baseline_comparison": {
+        "fixed": {
+            "controller": [
+                "J1",
+                "J2",
+                "J3"
+            ],
+            "total_sim_steps": 1745,
+            "throughput_vehicles": 1001,
+            "avg_waiting_time_s": 1.01,
+            "avg_travel_time_s": 152.11,
+            "mean_queue_length_m": 81.09,
+            "max_queue_length_m": 420.0,
+            "avg_speed_kmh": 35.61,
+            "method": "fixed"
+        },
+        "reactive": {
+            "controller": [
+                "J1",
+                "J2",
+                "J3"
+            ],
+            "total_sim_steps": 1732,
+            "throughput_vehicles": 1001,
+            "avg_waiting_time_s": 0.25,
+            "avg_travel_time_s": 136.6,
+            "mean_queue_length_m": 29.65,
+            "max_queue_length_m": 150.0,
+            "avg_speed_kmh": 39.52,
+            "method": "reactive"
+        },
+        "nexustwin": {
+            "controller": [
+                "J1",
+                "J2",
+                "J3"
+            ],
+            "total_sim_steps": 1700,
+            "throughput_vehicles": 1001,
+            "avg_waiting_time_s": 0.24,
+            "avg_travel_time_s": 136.52,
+            "mean_queue_length_m": 30.0,
+            "max_queue_length_m": 157.5,
+            "avg_speed_kmh": 39.65,
+            "method": "nexustwin"
+        }
+    },
+    "h2_predictive_vs_reactive": {
+        "reactive_only": {
+            "controller": [
+                "J1",
+                "J2",
+                "J3"
+            ],
+            "total_sim_steps": 1707,
+            "throughput_vehicles": 1001,
+            "avg_waiting_time_s": 0.25,
+            "avg_travel_time_s": 136.74,
+            "mean_queue_length_m": 30.22,
+            "max_queue_length_m": 150.0,
+            "avg_speed_kmh": 39.63,
+            "mode": "reactive_only",
+            "interventions_count": 1,
+            "decision_steps": [
+                1401.0
+            ]
+        },
+        "predictive_twin": {
+            "controller": [
+                "J1",
+                "J2",
+                "J3"
+            ],
+            "total_sim_steps": 1705,
+            "throughput_vehicles": 1001,
+            "avg_waiting_time_s": 0.25,
+            "avg_travel_time_s": 136.48,
+            "mean_queue_length_m": 29.91,
+            "max_queue_length_m": 150.0,
+            "avg_speed_kmh": 39.67,
+            "mode": "predictive_twin",
+            "interventions_count": 3,
+            "decision_steps": [
+                351.0,
+                701.0,
+                1051.0
+            ]
+        }
+    },
+    "h3_local_vs_network": {
+        "local_optimization": {
+            "controller": [
+                "J1",
+                "J2",
+                "J3"
+            ],
+            "total_sim_steps": 1700,
+            "throughput_vehicles": 1001,
+            "avg_waiting_time_s": 2.39,
+            "avg_travel_time_s": 159.07,
+            "mean_queue_length_m": 116.2,
+            "max_queue_length_m": 502.5,
+            "avg_speed_kmh": 34.52,
+            "mode": "local_optimization",
+            "spillback_weight": 0.0,
+            "spillback_events_count": 0
+        },
+        "network_optimization": {
+            "controller": [
+                "J1",
+                "J2",
+                "J3"
+            ],
+            "total_sim_steps": 1700,
+            "throughput_vehicles": 1001,
+            "avg_waiting_time_s": 2.39,
+            "avg_travel_time_s": 159.07,
+            "mean_queue_length_m": 116.2,
+            "max_queue_length_m": 502.5,
+            "avg_speed_kmh": 34.52,
+            "mode": "network_optimization",
+            "spillback_weight": 1.5,
+            "spillback_events_count": 0
+        }
+    },
+    "h4_sensor_robustness": {
+        "noise_0pct": {
+            "controller": [
+                "J1",
+                "J2",
+                "J3"
+            ],
+            "total_sim_steps": 1700,
+            "throughput_vehicles": 1001,
+            "avg_waiting_time_s": 2.39,
+            "avg_travel_time_s": 159.07,
+            "mean_queue_length_m": 116.2,
+            "max_queue_length_m": 502.5,
+            "avg_speed_kmh": 34.52,
+            "noise_level": 0.0
+        },
+        "noise_10pct": {
+            "controller": [
+                "J1",
+                "J2",
+                "J3"
+            ],
+            "total_sim_steps": 1700,
+            "throughput_vehicles": 1001,
+            "avg_waiting_time_s": 2.39,
+            "avg_travel_time_s": 159.07,
+            "mean_queue_length_m": 116.07,
+            "max_queue_length_m": 519.46,
+            "avg_speed_kmh": 34.52,
+            "noise_level": 0.1
+        },
+        "noise_20pct": {
+            "controller": [
+                "J1",
+                "J2",
+                "J3"
+            ],
+            "total_sim_steps": 1700,
+            "throughput_vehicles": 1001,
+            "avg_waiting_time_s": 2.39,
+            "avg_travel_time_s": 159.07,
+            "mean_queue_length_m": 115.93,
+            "max_queue_length_m": 566.41,
+            "avg_speed_kmh": 34.52,
+            "noise_level": 0.2
+        },
+        "noise_30pct": {
+            "controller": [
+                "J1",
+                "J2",
+                "J3"
+            ],
+            "total_sim_steps": 1700,
+            "throughput_vehicles": 1001,
+            "avg_waiting_time_s": 2.39,
+            "avg_travel_time_s": 159.07,
+            "mean_queue_length_m": 115.8,
+            "max_queue_length_m": 613.37,
+            "avg_speed_kmh": 34.52,
+            "noise_level": 0.3
+        }
+    },
+    "latency_analysis": {
+        "cands_2": {
+            "num_candidates": 2,
+            "horizon_seconds": 180,
+            "wall_clock_seconds": 18.159,
+            "seconds_per_candidate": 9.079
+        },
+        "cands_3": {
+            "num_candidates": 3,
+            "horizon_seconds": 180,
+            "wall_clock_seconds": 25.922,
+            "seconds_per_candidate": 8.641
+        },
+        "cands_4": {
+            "num_candidates": 4,
+            "horizon_seconds": 180,
+            "wall_clock_seconds": 35.116,
+            "seconds_per_candidate": 8.779
+        },
+        "cands_5": {
+            "num_candidates": 5,
+            "horizon_seconds": 180,
+            "wall_clock_seconds": 34.112,
+            "seconds_per_candidate": 6.822
+        }
+    }
+}

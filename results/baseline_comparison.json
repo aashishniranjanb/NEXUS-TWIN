@@ -1,0 +1,27 @@
+{
+    "fixed_baseline": {
+        "controller": "fixed_time",
+        "total_sim_steps": 2044,
+        "throughput_vehicles": 1001,
+        "avg_waiting_time_s": 1.04,
+        "avg_travel_time_s": 151.27,
+        "mean_queue_length_m": 69.1,
+        "max_queue_length_m": 382.5,
+        "avg_speed_kmh": 35.71
+    },
+    "reactive_baseline": {
+        "controller": "reactive",
+        "total_sim_steps": 2040,
+        "throughput_vehicles": 1001,
+        "avg_waiting_time_s": 0.21,
+        "avg_travel_time_s": 135.04,
+        "mean_queue_length_m": 21.81,
+        "max_queue_length_m": 105.0,
+        "avg_speed_kmh": 39.87
+    },
+    "improvements": {
+        "waiting_time_reduction_pct": 79.81,
+        "queue_reduction_pct": 68.44,
+        "speed_increase_pct": 11.65
+    }
+}

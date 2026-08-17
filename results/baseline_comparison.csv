@@ -1,0 +1,6 @@
+metric,fixed_baseline,reactive_baseline,diff_pct
+Avg Waiting Time (s),1.04,0.21,-79.81%
+Avg Travel Time (s),151.27,135.04,N/A
+Mean Queue Length (m),69.1,21.81,-68.44%
+Avg Speed (km/h),35.71,39.87,+11.65%
+Vehicle Throughput,1001,1001,100%

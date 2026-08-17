@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<edges xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/edges_file.xsd">
+    <!-- Main Vertical Corridor Edges (3 Lanes: Lane 0 & 1 general, Lane 2 dynamic shoulder/bus) -->
+    <edge id="N_to_J1" from="N_north" to="J1" numLanes="3" speed="13.89"/>
+    <edge id="J1_to_N" from="J1" to="N_north" numLanes="3" speed="13.89"/>
+
+    <edge id="J1_to_J2" from="J1" to="J2" numLanes="3" speed="13.89"/>
+    <edge id="J2_to_J1" from="J2" to="J1" numLanes="3" speed="13.89"/>
+
+    <edge id="J2_to_J3" from="J2" to="J3" numLanes="3" speed="13.89"/>
+    <edge id="J3_to_J2" from="J3" to="J2" numLanes="3" speed="13.89"/>
+
+    <edge id="J3_to_S" from="J3" to="S_south" numLanes="3" speed="13.89"/>
+    <edge id="S_to_J3" from="S_south" to="J3" numLanes="3" speed="13.89"/>
+
+    <!-- Horizontal Cross Streets at J1 -->
+    <edge id="W1_to_J1" from="W_j1" to="J1" numLanes="2" speed="13.89"/>
+    <edge id="J1_to_W1" from="J1" to="W_j1" numLanes="2" speed="13.89"/>
+    <edge id="E1_to_J1" from="E_j1" to="J1" numLanes="2" speed="13.89"/>
+    <edge id="J1_to_E1" from="J1" to="E_j1" numLanes="2" speed="13.89"/>
+
+    <!-- Horizontal Cross Streets at J2 -->
+    <edge id="W2_to_J2" from="W_j2" to="J2" numLanes="2" speed="13.89"/>
+    <edge id="J2_to_W2" from="J2" to="W_j2" numLanes="2" speed="13.89"/>
+    <edge id="E2_to_J2" from="E_j2" to="J2" numLanes="2" speed="13.89"/>
+    <edge id="J2_to_E2" from="J2" to="E_j2" numLanes="2" speed="13.89"/>
+
+    <!-- Horizontal Cross Streets at J3 -->
+    <edge id="W3_to_J3" from="W_j3" to="J3" numLanes="2" speed="13.89"/>
+    <edge id="J3_to_W3" from="J3" to="W_j3" numLanes="2" speed="13.89"/>
+    <edge id="E3_to_J3" from="E_j3" to="J3" numLanes="2" speed="13.89"/>
+    <edge id="J3_to_E3" from="J3" to="E_j3" numLanes="2" speed="13.89"/>
+
+    <!-- Parallel Arterial Bypass Edges for Diversion Strategy -->
+    <edge id="E1_to_E2" from="E_j1" to="E_j2" numLanes="2" speed="13.89"/>
+    <edge id="E2_to_E1" from="E_j2" to="E_j1" numLanes="2" speed="13.89"/>
+    <edge id="W1_to_W2" from="W_j1" to="W_j2" numLanes="2" speed="13.89"/>
+    <edge id="W2_to_W1" from="W_j2" to="W_j1" numLanes="2" speed="13.89"/>
+
+    <edge id="E2_to_E3" from="E_j2" to="E_j3" numLanes="2" speed="13.89"/>
+    <edge id="E3_to_E2" from="E_j3" to="E_j2" numLanes="2" speed="13.89"/>
+    <edge id="W2_to_W3" from="W_j2" to="W_j3" numLanes="2" speed="13.89"/>
+    <edge id="W3_to_W2" from="W_j3" to="W_j2" numLanes="2" speed="13.89"/>
+</edges>

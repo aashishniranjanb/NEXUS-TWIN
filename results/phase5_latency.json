@@ -1,0 +1,26 @@
+{
+    "cands_2": {
+        "num_candidates": 2,
+        "horizon_seconds": 180,
+        "wall_clock_seconds": 18.159,
+        "seconds_per_candidate": 9.079
+    },
+    "cands_3": {
+        "num_candidates": 3,
+        "horizon_seconds": 180,
+        "wall_clock_seconds": 25.922,
+        "seconds_per_candidate": 8.641
+    },
+    "cands_4": {
+        "num_candidates": 4,
+        "horizon_seconds": 180,
+        "wall_clock_seconds": 35.116,
+        "seconds_per_candidate": 8.779
+    },
+    "cands_5": {
+        "num_candidates": 5,
+        "horizon_seconds": 180,
+        "wall_clock_seconds": 34.112,
+        "seconds_per_candidate": 6.822
+    }
+}

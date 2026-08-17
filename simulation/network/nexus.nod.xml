@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nodes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/nodes_file.xsd">
+    <!-- 3 Signalized Junction Corridor -->
+    <node id="J1" x="500.0" y="1000.0" type="traffic_light" tl="J1"/>
+    <node id="J2" x="500.0" y="500.0" type="traffic_light" tl="J2"/>
+    <node id="J3" x="500.0" y="0.0" type="traffic_light" tl="J3"/>
+
+    <!-- Peripheral Entry/Exit Fringe Nodes -->
+    <node id="N_north" x="500.0" y="1500.0" type="priority"/>
+    <node id="S_south" x="500.0" y="-500.0" type="priority"/>
+
+    <node id="W_j1" x="0.0" y="1000.0" type="priority"/>
+    <node id="E_j1" x="1000.0" y="1000.0" type="priority"/>
+
+    <node id="W_j2" x="0.0" y="500.0" type="priority"/>
+    <node id="E_j2" x="1000.0" y="500.0" type="priority"/>
+
+    <node id="W_j3" x="0.0" y="0.0" type="priority"/>
+    <node id="E_j3" x="1000.0" y="0.0" type="priority"/>
+</nodes>

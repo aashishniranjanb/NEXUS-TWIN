@@ -1,0 +1,41 @@
+{
+    "mode": "Predictive Digital Twin",
+    "total_proactive_interventions": 5,
+    "decision_log": [
+        {
+            "step": 361.0,
+            "action": "Extend Green Signal Phase by +20s at J2",
+            "selected_strategy": "cand_green_extend_20s",
+            "score": 199.92,
+            "confidence": "55%"
+        },
+        {
+            "step": 541.0,
+            "action": "Maintain Current Baseline Signal Control",
+            "selected_strategy": "cand_do_nothing",
+            "score": 135.81,
+            "confidence": "55%"
+        },
+        {
+            "step": 901.0,
+            "action": "Maintain Current Baseline Signal Control",
+            "selected_strategy": "cand_do_nothing",
+            "score": 156.59,
+            "confidence": "55%"
+        },
+        {
+            "step": 1081.0,
+            "action": "Maintain Current Baseline Signal Control",
+            "selected_strategy": "cand_do_nothing",
+            "score": 146.45,
+            "confidence": "55%"
+        },
+        {
+            "step": 1261.0,
+            "action": "Extend Green Signal Phase by +20s at J2",
+            "selected_strategy": "cand_green_extend_20s",
+            "score": 131.75,
+            "confidence": "55%"
+        }
+    ]
+}

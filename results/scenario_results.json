@@ -1,0 +1,154 @@
+[
+    {
+        "strategy_id": "cand_do_nothing",
+        "strategy_type": "do_nothing",
+        "parameters": {},
+        "simulation_start_time": 300.0,
+        "simulation_end_time": 480.0,
+        "horizon_seconds": 180.0,
+        "predicted_delay_s": 3.77,
+        "predicted_queue_m": 137.21,
+        "predicted_throughput": 26,
+        "predicted_emissions": 29.912,
+        "predicted_emergency_delay_s": 179.0,
+        "per_junction_metrics": {
+            "J1": {
+                "total_halting": 5,
+                "queue_m": 37.5
+            },
+            "J2": {
+                "total_halting": 4,
+                "queue_m": 30.0
+            },
+            "J3": {
+                "total_halting": 0,
+                "queue_m": 0.0
+            }
+        },
+        "network_metrics": {
+            "avg_speed_kmh": 32.83,
+            "predicted_emissions_kg": 29.912
+        },
+        "score": 692.94,
+        "success": true,
+        "error_message": null
+    },
+    {
+        "strategy_id": "cand_green_extend_20s",
+        "strategy_type": "green_extend",
+        "parameters": {
+            "junction_id": "J1",
+            "extension_seconds": 20
+        },
+        "simulation_start_time": 300.0,
+        "simulation_end_time": 480.0,
+        "horizon_seconds": 180.0,
+        "predicted_delay_s": 3.37,
+        "predicted_queue_m": 125.71,
+        "predicted_throughput": 26,
+        "predicted_emissions": 29.049,
+        "predicted_emergency_delay_s": 179.0,
+        "per_junction_metrics": {
+            "J1": {
+                "total_halting": 3,
+                "queue_m": 22.5
+            },
+            "J2": {
+                "total_halting": 4,
+                "queue_m": 30.0
+            },
+            "J3": {
+                "total_halting": 0,
+                "queue_m": 0.0
+            }
+        },
+        "network_metrics": {
+            "avg_speed_kmh": 33.79,
+            "predicted_emissions_kg": 29.049
+        },
+        "score": 680.6,
+        "success": true,
+        "error_message": null
+    },
+    {
+        "strategy_id": "cand_diversion_30pct",
+        "strategy_type": "diversion",
+        "parameters": {
+            "from_edge": "J1_to_J2",
+            "alternate_edges": [
+                "J1_to_E1",
+                "E1_to_E2",
+                "E2_to_J2",
+                "J2_to_J3",
+                "J3_to_S"
+            ],
+            "diversion_percent": 30
+        },
+        "simulation_start_time": 300.0,
+        "simulation_end_time": 480.0,
+        "horizon_seconds": 180.0,
+        "predicted_delay_s": 3.87,
+        "predicted_queue_m": 139.92,
+        "predicted_throughput": 26,
+        "predicted_emissions": 30.125,
+        "predicted_emergency_delay_s": 179.0,
+        "per_junction_metrics": {
+            "J1": {
+                "total_halting": 3,
+                "queue_m": 22.5
+            },
+            "J2": {
+                "total_halting": 3,
+                "queue_m": 22.5
+            },
+            "J3": {
+                "total_halting": 0,
+                "queue_m": 0.0
+            }
+        },
+        "network_metrics": {
+            "avg_speed_kmh": 32.75,
+            "predicted_emissions_kg": 30.125
+        },
+        "score": 695.85,
+        "success": true,
+        "error_message": null
+    },
+    {
+        "strategy_id": "cand_dynamic_lane",
+        "strategy_type": "dynamic_lane",
+        "parameters": {
+            "edge_id": "J1_to_J2",
+            "lane_index": 2
+        },
+        "simulation_start_time": 300.0,
+        "simulation_end_time": 480.0,
+        "horizon_seconds": 180.0,
+        "predicted_delay_s": 3.91,
+        "predicted_queue_m": 142.0,
+        "predicted_throughput": 26,
+        "predicted_emissions": 29.972,
+        "predicted_emergency_delay_s": 179.0,
+        "per_junction_metrics": {
+            "J1": {
+                "total_halting": 5,
+                "queue_m": 37.5
+            },
+            "J2": {
+                "total_halting": 4,
+                "queue_m": 30.0
+            },
+            "J3": {
+                "total_halting": 0,
+                "queue_m": 0.0
+            }
+        },
+        "network_metrics": {
+            "avg_speed_kmh": 32.48,
+            "predicted_emissions_kg": 29.972
+        },
+        "score": 697.9,
+        "success": true,
+        "error_message": null
+    }
+]
