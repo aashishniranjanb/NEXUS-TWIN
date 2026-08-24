@@ -6,22 +6,15 @@ NEXUS-TWIN is a digital twin architecture for real-time traffic signal optimizat
 
 ```
 NEXUS-TWIN/
-├── docs/                 # Documentation and architecture specs
-├── simulation/           # SUMO simulation files & signal controllers
-│   ├── network/          # Network XML definitions (nexus.net.xml, etc.)
-│   ├── routes/           # Vehicle demand & route definitions (nexus.rou.xml)
-│   ├── signals/          # Fixed-time & Reactive adaptive traffic signal controllers
-│   ├── scenarios/        # Scenario simulation configs (future interventions)
-│   └── configs/          # SUMO config files (nexus.sumocfg)
-├── src/                  # Core Digital Twin engine modules
-│   ├── traffic_state.py  # Real-time TraCI state extractor
-│   └── metrics.py        # Delay, queue length, waiting time, throughput logger
+├── game/                 # Unity 3D project for the game client
+├── backend/              # FastAPI routing layer and game server logic
+├── simulation/           # SUMO simulation files & bridge logic
+├── intelligence/         # Prediction, strategy, and explainability engines
 ├── perception/           # Edge-AI / YOLO traffic detection pipelines
-├── prediction/           # Traffic forecasting models (e.g., XGBoost)
-├── optimization/         # Scenario simulation & strategy scoring engine
-├── dashboard/            # Analytical visual interface
-├── game/                 # Interactive simulation UI
+├── hardware/             # Physical device integrations (ESP32)
 ├── experiments/          # Baseline comparison and benchmarking scripts
+├── tests/                # Automated testing suite
+├── docs/                 # Documentation (PRD, Guidelines, Architecture)
 ├── data/                 # Raw & processed traffic data
 ├── results/              # Simulation output metrics & baseline reports
 └── assets/               # Visual assets and posters

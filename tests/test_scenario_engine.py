@@ -15,11 +15,11 @@ from experiments.run_baselines import setup_sumo_env, build_network_and_routes
 setup_sumo_env()
 
 import traci
-from src.scenario_models import Strategy, ScenarioResult
-from src.strategy_generator import StrategyGenerator
-from src.scenario_engine import ScenarioEngine
-from src.strategy_optimizer import StrategyOptimizer
-from src.explainable_ai import ExplainableAIEngine
+from backend.schemas.scenario_models import Strategy, ScenarioResult
+from intelligence.strategy.strategy_generator import StrategyGenerator
+from simulation.bridge.scenario_engine import ScenarioEngine
+from intelligence.strategy.strategy_optimizer import StrategyOptimizer
+from intelligence.explainability.explainable_ai import ExplainableAIEngine
 
 class TestScenarioEngine(unittest.TestCase):
     @classmethod

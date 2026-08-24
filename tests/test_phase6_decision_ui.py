@@ -14,7 +14,7 @@ import sys
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.append(str(PROJECT_ROOT))
 
-from src.decision_server import SystemStateManager, DecisionRequestHandler, run_server
+from backend.api.decision_server import SystemStateManager, DecisionRequestHandler, run_server
 
 class TestPhase6DecisionUI(unittest.TestCase):
     @classmethod

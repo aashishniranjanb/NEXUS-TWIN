@@ -14,8 +14,8 @@ import sys
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.append(str(PROJECT_ROOT))
 
-from src.game_engine import GameEngine, GameState, CongestionEvent, Badge, ALL_BADGES, CHALLENGE_SCENARIOS
-from src.scenario_models import Strategy, ScenarioResult
+from backend.game_server.game_engine import GameEngine, GameState, CongestionEvent, Badge, ALL_BADGES, CHALLENGE_SCENARIOS
+from backend.schemas.scenario_models import Strategy, ScenarioResult
 
 
 class TestGameSessionLifecycle(unittest.TestCase):

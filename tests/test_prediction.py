@@ -11,10 +11,10 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.append(str(PROJECT_ROOT))
 
-from src.feature_engineering import FeatureExtractor
-from prediction.congestion_predictor import CongestionPredictor, PredictionOutput
-from src.strategy_generator import StrategyGenerator
-from src.explainable_ai import ExplainableAIEngine
+from intelligence.feature_engineering.feature_engineering import FeatureExtractor
+from intelligence.prediction.congestion_predictor import CongestionPredictor, PredictionOutput
+from intelligence.strategy.strategy_generator import StrategyGenerator
+from intelligence.explainability.explainable_ai import ExplainableAIEngine
 
 class TestPredictionEngine(unittest.TestCase):
     def test_01_feature_extractor(self):
