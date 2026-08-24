@@ -116,47 +116,178 @@ namespace NexusTwin.Gameplay
             approved = false;
 
             IncidentManager.Instance?.ResolveIncident(NexusIds.Junctions.J2);
+            IncidentManager.Instance?.ResolveIncident(NexusIds.Junctions.J3);
             GameManager.Instance?.SetState(GameState.Briefing);
         }
 
         private IEnumerator ScenarioSequenceRoutine()
         {
+            int mission = (GameManager.Instance != null) ? GameManager.Instance.currentMission : 1;
+
+            if (mission == 2)
+            {
+                Debug.Log("[ScenarioDirector] 00:00 - Mission 02 Active: Monitoring Escape Corridor J1-J2-J3");
+                yield return new WaitForSeconds(4f);
+
+                // Stage 2: First Alert (J2 Bottleneck)
+                GameManager.Instance?.SetState(GameState.Event);
+                incidentOccurred = true;
+                IncidentManager.Instance?.TriggerIncident(NexusIds.Junctions.J2, IncidentType.Accident, new Vector3(2.5f, 0f, 0f));
+                Debug.Log("[ScenarioDirector] 00:04 - Incident 1 triggered at J2");
+                yield return new WaitForSeconds(4f);
+
+                // Stage 3: Complication (J3 lane disruption)
+                IncidentManager.Instance?.TriggerIncident(NexusIds.Junctions.J3, IncidentType.Closure, new Vector3(-2.5f, 0f, -60f));
+                Debug.Log("[ScenarioDirector] 00:08 - Incident 2 triggered at J3 (lane closed)");
+                yield return new WaitForSeconds(4f);
+
+                // Stage 4: AI Alert with Uncertainty
+                GameManager.Instance?.SetState(GameState.Analysis);
+                predictionFired = true;
+                _dataProvider.FetchAIPrediction(NexusIds.Junctions.J2, (alert) =>
+                {
+                    EventBus.RaiseAIPrediction(alert);
+                });
+                Debug.Log("[ScenarioDirector] 00:12 - AI predicts high congestion risk");
+                yield return new WaitForSeconds(4f);
+
+                // Stage 5: AI Recommendation & Decision
+                GameManager.Instance?.SetState(GameState.Decision);
+                recommendationFired = true;
+                _dataProvider.FetchStrategies(NexusIds.Junctions.J2, (options) =>
+                {
+                    EventBus.RaiseStrategiesReady(options);
+                    selectedStrategy = options[0]; // Coordinated Corridor is the AI Recommendation
+                });
+                yield return new WaitForSeconds(5f);
+
+                // Stage 6: Digital Twin Simulation
+                GameManager.Instance?.SetState(GameState.Simulation);
+                Debug.Log("[ScenarioDirector] Digital Twin evaluating multi-junction futures...");
+                yield return new WaitForSeconds(3f);
+
+                GameManager.Instance?.SetState(GameState.Comparison);
+                _dataProvider.SimulateFutures(NexusIds.Junctions.J2, selectedStrategy.type, (results) =>
+                {
+                    EventBus.RaiseSimulationComplete(results);
+                });
+                yield return new WaitForSeconds(3f);
+
+                // Explanation
+                GameManager.Instance?.SetState(GameState.Explanation);
+                _dataProvider.FetchExplanation(selectedStrategy.type, (explanation) =>
+                {
+                    EventBus.RaiseExplanationReady(explanation);
+                });
+                yield return new WaitForSeconds(3f);
+
+                // Stage 7: Decision Conflict / Approval
+                GameManager.Instance?.SetState(GameState.Approval);
+                Debug.Log("[ScenarioDirector] Awaiting operator priority decision...");
+
+                float waitApprove = 0f;
+                while (!decisionMade && waitApprove < 12f)
+                {
+                    waitApprove += Time.deltaTime;
+                    yield return null;
+                }
+
+                if (!decisionMade)
+                {
+                    EventBus.RaiseApproved();
+                }
+
+                // Stage 8: Execution & Consequences
+                if (selectedStrategy.type == StrategyType.DoNothing && approved)
+                {
+                    yield return new WaitForSeconds(4f);
+                    GameManager.Instance?.SetState(GameState.Failed);
+                    EventBus.RaiseMissionFailed(new MissionFailureData
+                    {
+                        title = "Escape Corridor Collapse",
+                        reason = "No Action resulted in compounding bottlenecks at J2 and J3. Emergency transit gridlocked.",
+                        finalQueue = 78f,
+                        ambulanceDelay = 32.5f
+                    });
+                    yield break;
+                }
+
+                GameManager.Instance?.SetState(GameState.Apply);
+                Debug.Log($"[ScenarioDirector] Applying strategy override: {selectedStrategy.label}");
+
+                TrafficLightController[] allLights = FindObjectsByType<TrafficLightController>(FindObjectsSortMode.None);
+                foreach (var light in allLights)
+                {
+                    light.ApplyStrategyOverride(selectedStrategy.strategyTypeString, 45f);
+                }
+                yield return new WaitForSeconds(2f);
+
+                // Dispatch Ambulance
+                ambulanceDispatched = true;
+                _ambulanceAgent = VehicleManager.Instance?.SpawnEmergencyAmbulance();
+                Debug.Log("[ScenarioDirector] Ambulance entering escape corridor");
+                yield return new WaitForSeconds(9f);
+
+                // Stage 9: Resolve & Result
+                GameManager.Instance?.SetState(GameState.Result);
+                IncidentManager.Instance?.ResolveIncident(NexusIds.Junctions.J2);
+                IncidentManager.Instance?.ResolveIncident(NexusIds.Junctions.J3);
+                yield return new WaitForSeconds(4f);
+
+                // Stage 10: Debrief
+                GameManager.Instance?.SetState(GameState.Score);
+                scenarioCompleted = true;
+
+                ScoreBreakdownData scoreData = new ScoreBreakdownData();
+                if (ScoreController.Instance != null)
+                {
+                    scoreData = new ScoreBreakdownData
+                    {
+                        trafficFlow = ScoreController.Instance.trafficFlowScore,
+                        emergencySafety = ScoreController.Instance.emergencySafetyScore,
+                        queueControl = ScoreController.Instance.queueControlScore,
+                        decisionQuality = ScoreController.Instance.decisionQualityScore
+                    };
+                }
+                else
+                {
+                    scoreData = new ScoreBreakdownData { trafficFlow = 290, emergencySafety = 330, queueControl = 210, decisionQuality = 150 };
+                }
+
+                EventBus.RaiseScoreUpdated(scoreData);
+                EventBus.RaiseScenarioComplete(scoreData);
+                yield break;
+            }
+
+            // Fallback to Mission 01 sequence if not mission 2
             Debug.Log("[ScenarioDirector] 00:00 - Mission 01 Active: Monitoring Corridor J1-J2-J3");
             yield return new WaitForSeconds(6f);
 
-            // 00:15 - Accident occurs at J2 (EVENT)
             GameManager.Instance?.SetState(GameState.Event);
             incidentOccurred = true;
             IncidentManager.Instance?.TriggerIncident(NexusIds.Junctions.J2, IncidentType.Accident, new Vector3(2.5f, 0f, 0f));
-            Debug.Log("[ScenarioDirector] 00:15 - ACCIDENT OCCURRED AT J2!");
             yield return new WaitForSeconds(6f);
 
-            // 00:30 - AI Predicts High Congestion (ANALYSIS)
             GameManager.Instance?.SetState(GameState.Analysis);
             predictionFired = true;
             _dataProvider.FetchAIPrediction(NexusIds.Junctions.J2, (alert) =>
             {
                 EventBus.RaiseAIPrediction(alert);
             });
-            Debug.Log("[ScenarioDirector] 00:30 - AI Predicts 87% Congestion Risk at J2");
             yield return new WaitForSeconds(5f);
 
-            // 00:45 - AI Recommends Strategy Options (DECISION)
             GameManager.Instance?.SetState(GameState.Decision);
             recommendationFired = true;
-
             _dataProvider.FetchStrategies(NexusIds.Junctions.J2, (options) =>
             {
                 EventBus.RaiseStrategiesReady(options);
-                selectedStrategy = options[0]; // default select recommendation
+                selectedStrategy = options[0];
             });
-            Debug.Log("[ScenarioDirector] 00:45 - AI Strategy Recommendation displayed");
 
-            // Wait for player to simulate or timeout
-            float waitSim = 0f;
-            while (!simulationRequested && waitSim < 10f)
+            float waitSimM1 = 0f;
+            while (!simulationRequested && waitSimM1 < 10f)
             {
-                waitSim += Time.deltaTime;
+                waitSimM1 += Time.deltaTime;
                 yield return null;
             }
 
@@ -165,9 +296,7 @@ namespace NexusTwin.Gameplay
                 EventBus.RaiseSimulateRequested();
             }
 
-            // 01:00 - Digital Twin Simulation (SIMULATION -> COMPARISON)
             GameManager.Instance?.SetState(GameState.Simulation);
-            Debug.Log("[ScenarioDirector] 01:00 - Digital Twin evaluating counterfactual futures...");
             yield return new WaitForSeconds(3f);
 
             GameManager.Instance?.SetState(GameState.Comparison);
@@ -177,7 +306,6 @@ namespace NexusTwin.Gameplay
             });
             yield return new WaitForSeconds(3f);
 
-            // 01:15 - Explanation Stage (EXPLANATION)
             GameManager.Instance?.SetState(GameState.Explanation);
             _dataProvider.FetchExplanation(selectedStrategy.type, (explanation) =>
             {
@@ -185,14 +313,12 @@ namespace NexusTwin.Gameplay
             });
             yield return new WaitForSeconds(2.5f);
 
-            // 01:30 - Player Approval Stage (APPROVAL)
             GameManager.Instance?.SetState(GameState.Approval);
-            Debug.Log("[ScenarioDirector] Awaiting Player Approval / Trade-off review...");
 
-            float waitApprove = 0f;
-            while (!decisionMade && waitApprove < 12f)
+            float waitApproveM1 = 0f;
+            while (!decisionMade && waitApproveM1 < 12f)
             {
-                waitApprove += Time.deltaTime;
+                waitApproveM1 += Time.deltaTime;
                 yield return null;
             }
 
@@ -201,10 +327,8 @@ namespace NexusTwin.Gameplay
                 EventBus.RaiseApproved();
             }
 
-            // Check if player selected DoNothing or rejected necessary intervention
             if (selectedStrategy.type == StrategyType.DoNothing && approved)
             {
-                // Unmitigated gridlock -> Mission Failure
                 yield return new WaitForSeconds(4f);
                 GameManager.Instance?.SetState(GameState.Failed);
                 EventBus.RaiseMissionFailed(new MissionFailureData
@@ -217,37 +341,29 @@ namespace NexusTwin.Gameplay
                 yield break;
             }
 
-            // 01:50 - Apply Strategy (APPLY)
             GameManager.Instance?.SetState(GameState.Apply);
-            Debug.Log($"[ScenarioDirector] Applying strategy: {selectedStrategy.label}");
-
-            TrafficLightController[] allLights = FindObjectsByType<TrafficLightController>(FindObjectsSortMode.None);
-            foreach (var light in allLights)
+            TrafficLightController[] M1Lights = FindObjectsByType<TrafficLightController>(FindObjectsSortMode.None);
+            foreach (var light in M1Lights)
             {
                 light.ApplyStrategyOverride(selectedStrategy.strategyTypeString, 45f);
             }
             yield return new WaitForSeconds(2f);
 
-            // 02:10 - Ambulance Dispatched
             ambulanceDispatched = true;
             _ambulanceAgent = VehicleManager.Instance?.SpawnEmergencyAmbulance();
-            Debug.Log("[ScenarioDirector] 02:10 - AMBULANCE_01 dispatched through corridor");
             yield return new WaitForSeconds(9f);
 
-            // 02:30 - Resolve & Result
             GameManager.Instance?.SetState(GameState.Result);
             IncidentManager.Instance?.ResolveIncident(NexusIds.Junctions.J2);
-            Debug.Log("[ScenarioDirector] 02:30 - Incident resolved, corridor normalized");
             yield return new WaitForSeconds(4f);
 
-            // 02:45 - Score Breakdown
             GameManager.Instance?.SetState(GameState.Score);
             scenarioCompleted = true;
 
-            ScoreBreakdownData scoreData;
+            ScoreBreakdownData scoreDataM1 = new ScoreBreakdownData();
             if (ScoreController.Instance != null)
             {
-                scoreData = new ScoreBreakdownData
+                scoreDataM1 = new ScoreBreakdownData
                 {
                     trafficFlow = ScoreController.Instance.trafficFlowScore,
                     emergencySafety = ScoreController.Instance.emergencySafetyScore,
@@ -257,18 +373,11 @@ namespace NexusTwin.Gameplay
             }
             else
             {
-                scoreData = new ScoreBreakdownData
-                {
-                    trafficFlow = 285,
-                    emergencySafety = 350,
-                    queueControl = 220,
-                    decisionQuality = 145
-                };
+                scoreDataM1 = new ScoreBreakdownData { trafficFlow = 285, emergencySafety = 350, queueControl = 220, decisionQuality = 145 };
             }
 
-            EventBus.RaiseScoreUpdated(scoreData);
-            EventBus.RaiseScenarioComplete(scoreData);
-            Debug.Log($"[ScenarioDirector] Mission Complete! Score: {scoreData.Total} pts");
+            EventBus.RaiseScoreUpdated(scoreDataM1);
+            EventBus.RaiseScenarioComplete(scoreDataM1);
         }
 
         private void HandleStrategySelected(StrategyOptionData option)
@@ -276,23 +385,47 @@ namespace NexusTwin.Gameplay
             selectedStrategy = option;
             Debug.Log($"[ScenarioDirector] Player selected strategy: {option.label}");
 
-            // Responsible AI Disagreement Check
-            if (option.type != aiRecommendedType && option.type != StrategyType.DoNothing)
-            {
-                float delayDelta = (option.type == StrategyType.EmergencyPriority) ? 8.0f : -18.0f;
-                float emergencyDelta = (option.type == StrategyType.EmergencyPriority) ? -31.0f : 4.2f;
-                string tradeOff = (option.type == StrategyType.EmergencyPriority)
-                    ? "Grants priority green wave to the ambulance at the expense of side-street civilian delay."
-                    : "Extends main arterial green times without rerouting incoming bottleneck volume.";
+            int mission = (GameManager.Instance != null) ? GameManager.Instance.currentMission : 1;
 
-                EventBus.RaiseDisagreementTriggered(new DisagreementData
+            if (mission == 2)
+            {
+                if (option.type != StrategyType.DynamicLane && option.type != StrategyType.DoNothing)
                 {
-                    playerAction = option.label,
-                    aiRecommendation = "Divert Traffic via Cross Street East/West bypass",
-                    tradeOffReason = tradeOff,
-                    networkDelayDeltaPct = delayDelta,
-                    emergencyDelayDeltaS = emergencyDelta
-                });
+                    float delayDelta = (option.type == StrategyType.EmergencyPriority) ? 15.0f : 10.0f;
+                    float emergencyDelta = (option.type == StrategyType.EmergencyPriority) ? -12.4f : -4.4f;
+                    string tradeOff = (option.type == StrategyType.EmergencyPriority)
+                        ? "Prioritizes immediate ambulance life safety, but overrides the coordinated corridor flow causing civilian gridlock."
+                        : "Diverts traffic away from J2, but overloads the downstream bottleneck at J3.";
+
+                    EventBus.RaiseDisagreementTriggered(new DisagreementData
+                    {
+                        playerAction = option.label,
+                        aiRecommendation = "Coordinated Corridor System (optimize network flow)",
+                        tradeOffReason = tradeOff,
+                        networkDelayDeltaPct = delayDelta,
+                        emergencyDelayDeltaS = emergencyDelta
+                    });
+                }
+            }
+            else
+            {
+                if (option.type != aiRecommendedType && option.type != StrategyType.DoNothing)
+                {
+                    float delayDelta = (option.type == StrategyType.EmergencyPriority) ? 8.0f : -18.0f;
+                    float emergencyDelta = (option.type == StrategyType.EmergencyPriority) ? -31.0f : 4.2f;
+                    string tradeOff = (option.type == StrategyType.EmergencyPriority)
+                        ? "Grants priority green wave to the ambulance at the expense of side-street civilian delay."
+                        : "Extends main arterial green times without rerouting incoming bottleneck volume.";
+
+                    EventBus.RaiseDisagreementTriggered(new DisagreementData
+                    {
+                        playerAction = option.label,
+                        aiRecommendation = "Divert Traffic via Cross Street East/West bypass",
+                        tradeOffReason = tradeOff,
+                        networkDelayDeltaPct = delayDelta,
+                        emergencyDelayDeltaS = emergencyDelta
+                    });
+                }
             }
         }
 

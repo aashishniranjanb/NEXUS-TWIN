@@ -13,11 +13,15 @@ namespace NexusTwin.UI
         public Button missionsButton;
         public Button settingsButton;
         public Button exitButton;
+        public Text playButtonText;
 
         private void Start()
         {
             if (playButton != null)
+            {
                 playButton.onClick.AddListener(OnPlayClicked);
+                playButtonText = playButton.GetComponentInChildren<Text>();
+            }
             if (missionsButton != null)
                 missionsButton.onClick.AddListener(OnMissionsClicked);
             if (settingsButton != null)
@@ -26,6 +30,7 @@ namespace NexusTwin.UI
                 exitButton.onClick.AddListener(OnExitClicked);
 
             EventBus.OnGameStateChanged += HandleGameStateChanged;
+            UpdatePlayButtonText();
         }
 
         private void OnDestroy()
@@ -39,6 +44,10 @@ namespace NexusTwin.UI
             {
                 panelRoot.SetActive(state == GameState.MainMenu);
             }
+            if (state == GameState.MainMenu)
+            {
+                UpdatePlayButtonText();
+            }
         }
 
         private void OnPlayClicked()
@@ -51,7 +60,20 @@ namespace NexusTwin.UI
         private void OnMissionsClicked()
         {
             SoundManager.Instance?.PlayClick();
-            Debug.Log("[MainMenu] Missions campaign list opened");
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.currentMission = (GameManager.Instance.currentMission == 1) ? 2 : 1;
+            }
+            UpdatePlayButtonText();
+            Debug.Log($"[MainMenu] Selected Mission: {GameManager.Instance?.currentMission}");
+        }
+
+        private void UpdatePlayButtonText()
+        {
+            if (playButtonText != null && GameManager.Instance != null)
+            {
+                playButtonText.text = $"PLAY: MISSION {GameManager.Instance.currentMission:00}";
+            }
         }
 
         private void OnSettingsClicked()

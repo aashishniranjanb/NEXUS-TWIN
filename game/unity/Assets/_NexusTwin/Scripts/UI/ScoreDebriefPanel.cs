@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using NexusTwin.Core;
 using NexusTwin.Audio;
 using NexusTwin.Data;
+using NexusTwin.Gameplay;
 
 namespace NexusTwin.UI
 {
@@ -46,26 +47,75 @@ namespace NexusTwin.UI
             if (panelRoot != null) panelRoot.SetActive(true);
             SoundManager.Instance?.PlayFanfare();
 
-            if (titleText != null)
-                titleText.text = "MISSION 01 COMPLETE — EMERGENCY CORRIDOR SECURED";
+            int mission = (GameManager.Instance != null) ? GameManager.Instance.currentMission : 1;
 
-            if (totalScoreText != null)
-                totalScoreText.text = $"{score.Total} / 1000 PTS";
-
-            if (breakdownText != null)
+            if (mission == 2)
             {
-                breakdownText.text = $"• Traffic Flow Efficiency: <b>{score.trafficFlow} pts</b>\n" +
-                                     $"• Emergency Corridor Safety: <b>{score.emergencySafety} pts</b>\n" +
-                                     $"• Queue Spillback Control: <b>{score.queueControl} pts</b>\n" +
-                                     $"• AI Decision Quality: <b>{score.decisionQuality} pts</b>";
+                if (titleText != null)
+                    titleText.text = "MISSION 02 COMPLETE — THE ESCAPE CORRIDOR RESOLVED";
+
+                if (totalScoreText != null)
+                    totalScoreText.text = $"{score.Total} / 1000 PTS";
+
+                if (breakdownText != null)
+                {
+                    breakdownText.text = $"• Coordinated Traffic Flow: <b>{score.trafficFlow} pts</b>\n" +
+                                         $"• Emergency Corridor Priority: <b>{score.emergencySafety} pts</b>\n" +
+                                         $"• Multi-Junction Spillback: <b>{score.queueControl} pts</b>\n" +
+                                         $"• AI Trade-Off Alignment: <b>{score.decisionQuality} pts</b>";
+                }
+
+                if (comparisonText != null)
+                {
+                    StrategyType sType = (ScenarioDirector.Instance != null) ? ScenarioDirector.Instance.selectedStrategy.type : StrategyType.DynamicLane;
+                    if (sType == StrategyType.EmergencyPriority)
+                    {
+                        comparisonText.text = $"<b>Corridor Impact Summary (Emergency Priority):</b>\n" +
+                                              $"• Mean Corridor Queue: <b>35m → 42m (+20%)</b>\n" +
+                                              $"• Average Network Delay: <b>0.28s → 0.32s (+15%)</b>\n" +
+                                              $"• Ambulance Transit: <color=#39E75F><b>SAFE ARRIVAL (0.0s delay)</b></color>\n" +
+                                              $"<i>Human Choice overridden AI recommended network flow optimization.</i>";
+                    }
+                    else if (sType == StrategyType.DynamicLane)
+                    {
+                        comparisonText.text = $"<b>Corridor Impact Summary (Coordinated Corridor):</b>\n" +
+                                              $"• Mean Corridor Queue: <b>35m → 22m (-35%)</b>\n" +
+                                              $"• Average Network Delay: <b>0.28s → 0.17s (-38%)</b>\n" +
+                                              $"• Ambulance Transit: <color=#F2B84B><b>TRANSIT STALLED (12.4s delay)</b></color>\n" +
+                                              $"<i>Accepted AI recommendation. Optimized network delay but delayed emergency response.</i>";
+                    }
+                    else
+                    {
+                        comparisonText.text = $"<b>Corridor Impact Summary (Suboptimal Choice):</b>\n" +
+                                              $"• Mean Corridor Queue: <b>35m → 38m (+8%)</b>\n" +
+                                              $"• Average Network Delay: <b>0.28s → 0.26s (-5%)</b>\n" +
+                                              $"• Ambulance Transit: <color=#D94040><b>TRANSIT DELAYED (14.8s delay)</b></color>";
+                    }
+                }
             }
-
-            if (comparisonText != null)
+            else
             {
-                comparisonText.text = $"<b>Corridor Impact Summary:</b>\n" +
-                                      $"• Mean Corridor Queue: <b>45m → 12m (-73%)</b>\n" +
-                                      $"• Average Network Delay: <b>0.35s → 0.18s (-48%)</b>\n" +
-                                      $"• Ambulance Transit: <color=#39E75F><b>SAFE ARRIVAL (0.0s delay)</b></color>";
+                if (titleText != null)
+                    titleText.text = "MISSION 01 COMPLETE — EMERGENCY CORRIDOR SECURED";
+
+                if (totalScoreText != null)
+                    totalScoreText.text = $"{score.Total} / 1000 PTS";
+
+                if (breakdownText != null)
+                {
+                    breakdownText.text = $"• Traffic Flow Efficiency: <b>{score.trafficFlow} pts</b>\n" +
+                                         $"• Emergency Corridor Safety: <b>{score.emergencySafety} pts</b>\n" +
+                                         $"• Queue Spillback Control: <b>{score.queueControl} pts</b>\n" +
+                                         $"• AI Decision Quality: <b>{score.decisionQuality} pts</b>";
+                }
+
+                if (comparisonText != null)
+                {
+                    comparisonText.text = $"<b>Corridor Impact Summary:</b>\n" +
+                                          $"• Mean Corridor Queue: <b>45m → 12m (-73%)</b>\n" +
+                                          $"• Average Network Delay: <b>0.35s → 0.18s (-48%)</b>\n" +
+                                          $"• Ambulance Transit: <color=#39E75F><b>SAFE ARRIVAL (0.0s delay)</b></color>";
+                }
             }
         }
 
@@ -79,7 +129,10 @@ namespace NexusTwin.UI
         private void OnNextMissionClicked()
         {
             SoundManager.Instance?.PlayClick();
-            Debug.Log("[ScoreDebrief] Mission 02 selected — The Heist Escape Route");
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.currentMission = (GameManager.Instance.currentMission == 1) ? 2 : 1;
+            }
             if (panelRoot != null) panelRoot.SetActive(false);
             EventBus.RaiseMissionRestart();
         }

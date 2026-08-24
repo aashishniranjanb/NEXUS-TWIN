@@ -20,6 +20,7 @@ namespace NexusTwin.Core
         public GameState currentState = GameState.MainMenu;
         public bool isBackendConnected = false;
         public bool useMockData = true; // Stage A: true. Stage B (step 17): false.
+        public int currentMission = 1;
 
         private void Awake()
         {

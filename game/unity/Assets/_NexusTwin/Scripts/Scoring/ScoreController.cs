@@ -125,37 +125,67 @@ namespace NexusTwin.Scoring
                 return;
             }
 
+            int mission = (GameManager.Instance != null) ? GameManager.Instance.currentMission : 1;
             bool approved = ScenarioDirector.Instance.approved;
             StrategyType sType = ScenarioDirector.Instance.selectedStrategy.type;
 
-            if (!approved)
+            if (mission == 2)
             {
-                // Player rejected the intervention, resulting in default No Action / baseline gridlock
-                ComputeScore(-45.0f, -62.0f, 24.5f, false);
+                if (!approved)
+                {
+                    ComputeScore(-65.0f, -78.0f, 32.0f, false);
+                }
+                else
+                {
+                    switch (sType)
+                    {
+                        case StrategyType.DynamicLane:
+                            ComputeScore(38.0f, 35.0f, 12.4f, true);
+                            break;
+                        case StrategyType.EmergencyPriority:
+                            ComputeScore(-15.0f, -18.0f, 0.0f, false);
+                            break;
+                        case StrategyType.Diversion:
+                            ComputeScore(-10.0f, -20.0f, 8.0f, false);
+                            break;
+                        case StrategyType.GreenExtend:
+                            ComputeScore(5.0f, -10.0f, 14.8f, false);
+                            break;
+                        case StrategyType.DoNothing:
+                            ComputeScore(-65.0f, -78.0f, 32.0f, false);
+                            break;
+                        default:
+                            ComputeScore(0.0f, 0.0f, 0.0f, false);
+                            break;
+                    }
+                }
             }
             else
             {
-                switch (sType)
+                if (!approved)
                 {
-                    case StrategyType.Diversion:
-                        // Future A (Optimal choice)
-                        ComputeScore(32.5f, 28.0f, 0.0f, true);
-                        break;
-                    case StrategyType.GreenExtend:
-                        // Future B
-                        ComputeScore(18.0f, 15.4f, 4.2f, false);
-                        break;
-                    case StrategyType.DynamicLane:
-                        // Future C
-                        ComputeScore(6.5f, 4.0f, 6.8f, false);
-                        break;
-                    case StrategyType.DoNothing:
-                        // Future D
-                        ComputeScore(-45.0f, -62.0f, 24.5f, false);
-                        break;
-                    default:
-                        ComputeScore(0.0f, 0.0f, 0.0f, false);
-                        break;
+                    ComputeScore(-45.0f, -62.0f, 24.5f, false);
+                }
+                else
+                {
+                    switch (sType)
+                    {
+                        case StrategyType.Diversion:
+                            ComputeScore(32.5f, 28.0f, 0.0f, true);
+                            break;
+                        case StrategyType.GreenExtend:
+                            ComputeScore(18.0f, 15.4f, 4.2f, false);
+                            break;
+                        case StrategyType.DynamicLane:
+                            ComputeScore(6.5f, 4.0f, 6.8f, false);
+                            break;
+                        case StrategyType.DoNothing:
+                            ComputeScore(-45.0f, -62.0f, 24.5f, false);
+                            break;
+                        default:
+                            ComputeScore(0.0f, 0.0f, 0.0f, false);
+                            break;
+                    }
                 }
             }
         }

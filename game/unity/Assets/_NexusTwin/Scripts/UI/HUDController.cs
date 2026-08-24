@@ -95,6 +95,13 @@ namespace NexusTwin.UI
                 stateText.text = $"[{modeLabel}] {state.ToString().ToUpper()}";
             }
 
+            if (missionText != null && GameManager.Instance != null)
+            {
+                missionText.text = (GameManager.Instance.currentMission == 2)
+                    ? "MISSION 02: THE ESCAPE CORRIDOR"
+                    : "MISSION 01: EMERGENCY CORRIDOR";
+            }
+
             if (topBarRoot != null)
             {
                 // Only show top bar during active gameplay or debriefing
