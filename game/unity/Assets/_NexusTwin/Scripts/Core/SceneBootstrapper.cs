@@ -69,6 +69,9 @@ namespace NexusTwin.Core
 
             if (FindFirstObjectByType<SandboxModeController>() == null)
             { GameObject smc = new GameObject("SandboxModeController"); smc.AddComponent<SandboxModeController>(); }
+
+            if (FindFirstObjectByType<ScorePopupFX>() == null)
+            { GameObject sp = new GameObject("ScorePopupFX"); sp.AddComponent<ScorePopupFX>(); }
         }
 
         // ──────────────────────────────────────────────
