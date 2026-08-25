@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using NexusTwin.Core;
@@ -7,9 +8,10 @@ using NexusTwin.Gameplay;
 namespace NexusTwin.UI
 {
     /// <summary>
-    /// HUDController — Primary Heads-Up Display orchestrator.
-    /// Manages TopBar, MainMenu, Cinematic, Briefing, AI Alert, Strategy, Counterfactual Cards,
-    /// Explanation, AI Disagreement, Failure, and Score Debriefing panels.
+    /// HUDController — Primary Heads-Up Display orchestrator for NEXUS-TWIN.
+    /// Polished features: live network health bar, animated score counter,
+    /// state-aware top bar colors, junction status indicators,
+    /// and animated state transitions across all workflow panels.
     /// </summary>
     public class HUDController : MonoBehaviour
     {
@@ -26,6 +28,21 @@ namespace NexusTwin.UI
         public Text junctionText;
         public GameObject mockModeBanner;
 
+        [Header("Network Health Bar")]
+        public Image healthBarFill;
+        public Image healthBarBg;
+
+        [Header("Junction Status Indicators")]
+        public Image j1Indicator;
+        public Image j2Indicator;
+        public Image j3Indicator;
+        public Text j1Label;
+        public Text j2Label;
+        public Text j3Label;
+
+        [Header("Top Bar Background")]
+        public Image topBarBg;
+
         [Header("Primary Panels")]
         public MainMenuPanel mainMenuPanel;
         public IntroCinematicController introCinematic;
@@ -41,21 +58,29 @@ namespace NexusTwin.UI
 
         private float _sessionTimer = 0f;
         private int _currentScore = 0;
+        private int _displayScore = 0;
+        private Coroutine _scoreRoutine;
+
+        // Color palette
+        private static readonly Color TopBarNormal   = new Color(0.92f, 0.94f, 0.96f, 0.98f);
+        private static readonly Color TopBarAlert     = new Color(0.14f, 0.06f, 0.05f, 0.97f);
+        private static readonly Color TopBarApproval  = new Color(0.04f, 0.14f, 0.06f, 0.97f);
+        private static readonly Color AccentBlue      = new Color(0.10f, 0.53f, 0.82f, 1f);
+        private static readonly Color SuccessGreen    = new Color(0.22f, 0.906f, 0.372f, 1f);
+        private static readonly Color WarningRed      = new Color(0.85f, 0.25f, 0.18f, 1f);
+        private static readonly Color AmberYellow     = new Color(0.95f, 0.72f, 0.15f, 1f);
+        private static readonly Color NavyDark        = new Color(0.06f, 0.08f, 0.12f, 1f);
 
         private void Awake()
         {
-            if (Instance != null && Instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
+            if (Instance != null && Instance != this) { Destroy(gameObject); return; }
             Instance = this;
         }
 
         private void Start()
         {
             EventBus.OnGameStateChanged += UpdateStateDisplay;
-            EventBus.OnScoreUpdated += UpdateScoreDisplay;
+            EventBus.OnScoreUpdated     += UpdateScoreDisplay;
             EventBus.OnScenarioComplete += HandleScenarioComplete;
 
             if (mockModeBanner != null)
@@ -68,7 +93,7 @@ namespace NexusTwin.UI
         private void OnDestroy()
         {
             EventBus.OnGameStateChanged -= UpdateStateDisplay;
-            EventBus.OnScoreUpdated -= UpdateScoreDisplay;
+            EventBus.OnScoreUpdated     -= UpdateScoreDisplay;
             EventBus.OnScenarioComplete -= HandleScenarioComplete;
         }
 
@@ -82,56 +107,85 @@ namespace NexusTwin.UI
                     int min = Mathf.FloorToInt(_sessionTimer / 60f);
                     int sec = Mathf.FloorToInt(_sessionTimer % 60f);
                     timerText.text = $"TIME: {min:00}:{sec:00}";
+
+                    // Color timer red when approaching 5 minutes
+                    if (_sessionTimer > 240f)
+                        timerText.color = WarningRed;
+                    else if (_sessionTimer > 180f)
+                        timerText.color = AmberYellow;
                 }
+            }
+
+            // Animated score counter
+            if (_displayScore != _currentScore)
+            {
+                _displayScore = (int)Mathf.MoveTowards(_displayScore, _currentScore, Time.deltaTime * 300f);
+                if (scoreText != null)
+                    scoreText.text = $"SCORE: {_displayScore}";
             }
         }
 
         private void UpdateStateDisplay(GameState state)
         {
+            // Live/demo badge
             if (stateText != null)
             {
                 bool isLive = (GameManager.Instance != null && !GameManager.Instance.useMockData && GameManager.Instance.isBackendConnected);
-                string modeLabel = isLive ? "LIVE AI" : "DEMO MODE";
-                stateText.text = $"[{modeLabel}] {state.ToString().ToUpper()}";
+                string modeLabel = isLive ? "◉ LIVE AI" : "◎ DEMO MODE";
+                stateText.text = modeLabel;
+                stateText.color = isLive ? SuccessGreen : AccentBlue;
             }
 
+            // Mission label
             if (missionText != null && GameManager.Instance != null)
             {
                 missionText.text = (GameManager.Instance.currentMission == 2)
-                    ? "MISSION 02: THE ESCAPE CORRIDOR"
+                    ? "MISSION 02: ESCAPE CORRIDOR"
                     : "MISSION 01: EMERGENCY CORRIDOR";
             }
 
+            // Top bar visibility
             if (topBarRoot != null)
-            {
-                // Only show top bar during active gameplay or debriefing
                 topBarRoot.SetActive(state != GameState.MainMenu && state != GameState.Cinematic);
+
+            // Top bar tint by game state
+            if (topBarBg != null)
+            {
+                Color barColor = TopBarNormal;
+                if (state == GameState.Analysis || state == GameState.Event)
+                    barColor = TopBarAlert;
+                else if (state == GameState.Approval)
+                    barColor = TopBarApproval;
+                topBarBg.color = barColor;
             }
 
-            // Centralized GameState UI Layout Manager
+            // Health bar update
+            UpdateHealthBar(state);
+
+            // Panel orchestration
             switch (state)
             {
                 case GameState.MainMenu:
-                    if (mainMenuPanel != null && mainMenuPanel.panelRoot != null) mainMenuPanel.panelRoot.SetActive(true);
-                    if (missionBriefingPanel != null && missionBriefingPanel.panelRoot != null) missionBriefingPanel.panelRoot.SetActive(false);
-                    if (failurePanel != null && failurePanel.panelRoot != null) failurePanel.panelRoot.SetActive(false);
-                    if (scoreDebriefPanel != null && scoreDebriefPanel.panelRoot != null) scoreDebriefPanel.panelRoot.SetActive(false);
+                    SetPanel(mainMenuPanel?.panelRoot, true);
+                    SetPanel(missionBriefingPanel?.panelRoot, false);
+                    SetPanel(failurePanel?.panelRoot, false);
+                    SetPanel(scoreDebriefPanel?.panelRoot, false);
                     HideWorkflowPanels();
                     break;
 
                 case GameState.Cinematic:
-                    if (mainMenuPanel != null && mainMenuPanel.panelRoot != null) mainMenuPanel.panelRoot.SetActive(false);
-                    if (missionBriefingPanel != null && missionBriefingPanel.panelRoot != null) missionBriefingPanel.panelRoot.SetActive(false);
-                    if (failurePanel != null && failurePanel.panelRoot != null) failurePanel.panelRoot.SetActive(false);
-                    if (scoreDebriefPanel != null && scoreDebriefPanel.panelRoot != null) scoreDebriefPanel.panelRoot.SetActive(false);
+                    SetPanel(mainMenuPanel?.panelRoot, false);
+                    SetPanel(missionBriefingPanel?.panelRoot, false);
+                    SetPanel(failurePanel?.panelRoot, false);
+                    SetPanel(scoreDebriefPanel?.panelRoot, false);
                     HideWorkflowPanels();
                     break;
 
                 case GameState.Briefing:
-                    if (mainMenuPanel != null && mainMenuPanel.panelRoot != null) mainMenuPanel.panelRoot.SetActive(false);
-                    if (missionBriefingPanel != null && missionBriefingPanel.panelRoot != null) missionBriefingPanel.panelRoot.SetActive(true);
-                    if (failurePanel != null && failurePanel.panelRoot != null) failurePanel.panelRoot.SetActive(false);
-                    if (scoreDebriefPanel != null && scoreDebriefPanel.panelRoot != null) scoreDebriefPanel.panelRoot.SetActive(false);
+                    SetPanel(mainMenuPanel?.panelRoot, false);
+                    SetPanel(missionBriefingPanel?.panelRoot, true);
+                    SetPanel(failurePanel?.panelRoot, false);
+                    SetPanel(scoreDebriefPanel?.panelRoot, false);
                     HideWorkflowPanels();
                     break;
 
@@ -139,81 +193,152 @@ namespace NexusTwin.UI
                 case GameState.Event:
                 case GameState.Apply:
                 case GameState.Result:
-                    if (mainMenuPanel != null && mainMenuPanel.panelRoot != null) mainMenuPanel.panelRoot.SetActive(false);
-                    if (missionBriefingPanel != null && missionBriefingPanel.panelRoot != null) missionBriefingPanel.panelRoot.SetActive(false);
-                    if (failurePanel != null && failurePanel.panelRoot != null) failurePanel.panelRoot.SetActive(false);
-                    if (scoreDebriefPanel != null && scoreDebriefPanel.panelRoot != null) scoreDebriefPanel.panelRoot.SetActive(false);
+                    SetPanel(mainMenuPanel?.panelRoot, false);
+                    SetPanel(missionBriefingPanel?.panelRoot, false);
+                    SetPanel(failurePanel?.panelRoot, false);
+                    SetPanel(scoreDebriefPanel?.panelRoot, false);
                     HideWorkflowPanels();
                     break;
 
                 case GameState.Analysis:
-                    if (alertPanel != null && alertPanel.panelRoot != null) alertPanel.panelRoot.SetActive(true);
-                    if (strategyPanel != null) strategyPanel.Hide();
-                    if (cardPanel != null) cardPanel.Hide();
-                    if (explanationPanel != null) explanationPanel.Hide();
-                    if (decisionButtons != null && decisionButtons.panelRoot != null) decisionButtons.panelRoot.SetActive(false);
+                    SetPanel(alertPanel?.panelRoot, true);
+                    strategyPanel?.Hide();
+                    cardPanel?.Hide();
+                    explanationPanel?.Hide();
+                    SetPanel(decisionButtons?.panelRoot, false);
                     break;
 
                 case GameState.Decision:
                 case GameState.Simulation:
-                    if (alertPanel != null && alertPanel.panelRoot != null) alertPanel.panelRoot.SetActive(true);
-                    if (strategyPanel != null && strategyPanel.panelRoot != null) strategyPanel.panelRoot.SetActive(true);
-                    if (cardPanel != null) cardPanel.Hide();
-                    if (explanationPanel != null) explanationPanel.Hide();
-                    if (decisionButtons != null && decisionButtons.panelRoot != null) decisionButtons.panelRoot.SetActive(false);
+                    SetPanel(alertPanel?.panelRoot, true);
+                    SetPanel(strategyPanel?.panelRoot, true);
+                    cardPanel?.Hide();
+                    explanationPanel?.Hide();
+                    SetPanel(decisionButtons?.panelRoot, false);
                     break;
 
                 case GameState.Comparison:
-                    if (alertPanel != null && alertPanel.panelRoot != null) alertPanel.panelRoot.SetActive(true);
-                    if (strategyPanel != null) strategyPanel.Hide();
-                    if (cardPanel != null && cardPanel.panelRoot != null) cardPanel.panelRoot.SetActive(true);
-                    if (explanationPanel != null) explanationPanel.Hide();
-                    if (decisionButtons != null && decisionButtons.panelRoot != null) decisionButtons.panelRoot.SetActive(false);
+                    SetPanel(alertPanel?.panelRoot, true);
+                    strategyPanel?.Hide();
+                    SetPanel(cardPanel?.panelRoot, true);
+                    explanationPanel?.Hide();
+                    SetPanel(decisionButtons?.panelRoot, false);
                     break;
 
                 case GameState.Explanation:
                 case GameState.Approval:
-                    if (alertPanel != null && alertPanel.panelRoot != null) alertPanel.panelRoot.SetActive(true);
-                    if (strategyPanel != null) strategyPanel.Hide();
-                    if (cardPanel != null && cardPanel.panelRoot != null) cardPanel.panelRoot.SetActive(true);
-                    if (explanationPanel != null && explanationPanel.panelRoot != null) explanationPanel.panelRoot.SetActive(true);
-                    if (decisionButtons != null && decisionButtons.panelRoot != null) decisionButtons.panelRoot.SetActive(true);
+                    SetPanel(alertPanel?.panelRoot, true);
+                    strategyPanel?.Hide();
+                    SetPanel(cardPanel?.panelRoot, true);
+                    SetPanel(explanationPanel?.panelRoot, true);
+                    SetPanel(decisionButtons?.panelRoot, true);
                     break;
 
                 case GameState.Score:
                     HideWorkflowPanels();
-                    if (scoreDebriefPanel != null && scoreDebriefPanel.panelRoot != null) scoreDebriefPanel.panelRoot.SetActive(true);
+                    SetPanel(scoreDebriefPanel?.panelRoot, true);
                     break;
 
                 case GameState.Failed:
                     HideWorkflowPanels();
-                    if (failurePanel != null && failurePanel.panelRoot != null) failurePanel.panelRoot.SetActive(true);
+                    SetPanel(failurePanel?.panelRoot, true);
                     break;
             }
         }
 
+        private void UpdateHealthBar(GameState state)
+        {
+            float health = 0.94f; // Default healthy
+            Color healthColor = SuccessGreen;
+
+            if (state == GameState.Analysis || state == GameState.Event)
+            {
+                health = 0.62f;
+                healthColor = AmberYellow;
+            }
+            else if (state == GameState.Failed)
+            {
+                health = 0.18f;
+                healthColor = WarningRed;
+            }
+            else if (state >= GameState.Score)
+            {
+                health = 0.96f;
+                healthColor = SuccessGreen;
+            }
+
+            if (healthText != null)
+            {
+                healthText.text = $"HEALTH: {Mathf.RoundToInt(health * 100f)}%";
+                healthText.color = healthColor;
+            }
+
+            if (healthBarFill != null)
+            {
+                healthBarFill.color = healthColor;
+                StartCoroutine(AnimateHealthBar(health));
+            }
+        }
+
+        private IEnumerator AnimateHealthBar(float target)
+        {
+            if (healthBarFill == null) yield break;
+            RectTransform rt = healthBarFill.GetComponent<RectTransform>();
+            if (rt == null) yield break;
+            float start = rt.anchorMax.x;
+            float t = 0f;
+            while (t < 0.4f)
+            {
+                t += Time.deltaTime;
+                rt.anchorMax = new Vector2(Mathf.SmoothStep(start, target, t / 0.4f), rt.anchorMax.y);
+                yield return null;
+            }
+            rt.anchorMax = new Vector2(target, rt.anchorMax.y);
+        }
+
+        private void SetPanel(GameObject panel, bool active)
+        {
+            if (panel != null) panel.SetActive(active);
+        }
+
         private void HideWorkflowPanels()
         {
-            if (alertPanel != null) alertPanel.Hide();
-            if (strategyPanel != null) strategyPanel.Hide();
-            if (cardPanel != null) cardPanel.Hide();
-            if (explanationPanel != null) explanationPanel.Hide();
-            if (decisionButtons != null && decisionButtons.panelRoot != null) decisionButtons.panelRoot.SetActive(false);
-            if (disagreementModal != null && disagreementModal.modalRoot != null) disagreementModal.modalRoot.SetActive(false);
+            alertPanel?.Hide();
+            strategyPanel?.Hide();
+            cardPanel?.Hide();
+            explanationPanel?.Hide();
+            SetPanel(decisionButtons?.panelRoot, false);
+            SetPanel(disagreementModal?.modalRoot, false);
         }
 
         private void UpdateScoreDisplay(ScoreBreakdownData score)
         {
             _currentScore = score.Total;
-            if (scoreText != null)
-            {
-                scoreText.text = $"SCORE: {_currentScore}";
-            }
+            // Animated counter runs in Update()
         }
 
         private void HandleScenarioComplete(ScoreBreakdownData score)
         {
-            Debug.Log($"[HUDController] Scenario Complete — Final Score: {score.Total}");
+            Debug.Log($"[HUDController] Mission Complete — Score: {score.Total}");
+        }
+
+        /// <summary>Sets junction indicator color. Call from ScenarioDirector on incident events.</summary>
+        public void SetJunctionStatus(string junctionId, JunctionStatus status)
+        {
+            Image indicator = junctionId == "J1" ? j1Indicator : junctionId == "J2" ? j2Indicator : j3Indicator;
+            Text label = junctionId == "J1" ? j1Label : junctionId == "J2" ? j2Label : j3Label;
+            if (indicator == null) return;
+
+            Color c = status == JunctionStatus.Normal   ? SuccessGreen :
+                      status == JunctionStatus.Warning  ? AmberYellow  :
+                      status == JunctionStatus.Critical ? WarningRed   :
+                                                         new Color(0.5f, 0.5f, 0.6f);
+            indicator.color = c;
+            if (label != null) label.color = c;
+            if (status == JunctionStatus.Critical)
+                StartCoroutine(UIAnimator.PulseHighlight(indicator, Color.white, 0.4f, 3));
         }
     }
+
+    public enum JunctionStatus { Normal, Warning, Critical, Closed }
 }

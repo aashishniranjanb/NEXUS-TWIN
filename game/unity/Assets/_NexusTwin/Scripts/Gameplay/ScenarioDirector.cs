@@ -7,6 +7,7 @@ using NexusTwin.Vehicles;
 using NexusTwin.Traffic;
 using NexusTwin.Scoring;
 using NexusTwin.Networking;
+using NexusTwin.UI;
 
 namespace NexusTwin.Gameplay
 {
@@ -210,6 +211,20 @@ namespace NexusTwin.Gameplay
                         ambulanceDelay = 32.5f
                     });
                     yield break;
+                }
+
+                // Points popup for human operator decision
+                if (selectedStrategy.type == StrategyType.Diversion)
+                {
+                    ScorePopupFX.ShowPopup("+250 PTS — OPTIMAL AI ALIGNMENT!", new Vector2(0, 100), new Color(0.22f, 0.906f, 0.372f));
+                }
+                else if (selectedStrategy.type == StrategyType.EmergencyPriority)
+                {
+                    ScorePopupFX.ShowPopup("+180 PTS — EMERGENCY ROUTE SECURED!", new Vector2(0, 100), new Color(0.10f, 0.53f, 0.82f));
+                }
+                else
+                {
+                    ScorePopupFX.ShowPopup("+100 PTS — INTERVENTION APPLIED", new Vector2(0, 100), new Color(0.95f, 0.72f, 0.15f));
                 }
 
                 GameManager.Instance?.SetState(GameState.Apply);

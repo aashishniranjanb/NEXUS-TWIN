@@ -47,42 +47,80 @@ namespace NexusTwin.Vehicles
         private float _remoteSpeed = 0f;
         private float _lastRemoteUpdateTime = 0f;
 
+        // Cached renderer refs for siren lights
+        private MeshRenderer _sirenRedRend;
+        private MeshRenderer _sirenBlueRend;
+        private MeshRenderer _sirenWhiteRend;
+        private bool _sirenCacheDone = false;
+
         private void Update()
         {
             if (isRemoteDriven)
             {
-                // Smooth interpolation for remote state
                 transform.position = Vector3.Lerp(transform.position, _targetRemotePos, Time.deltaTime * 12f);
                 transform.rotation = Quaternion.Slerp(transform.rotation, _targetRemoteRot, Time.deltaTime * 12f);
                 currentSpeed = _remoteSpeed;
             }
             else
             {
-                // Local waypoint driving
                 DriveAlongWaypoints();
             }
 
-            // Emergency visual flash
+            // ── Ambulance alternating red/blue siren flash ───────────────────
             if (isEmergency && emergencyFlashingLight != null)
             {
-                emergencyFlashingLight.SetActive((Mathf.FloorToInt(Time.time * 6f) % 2) == 0);
+                if (!_sirenCacheDone) CacheSirenRenderers();
+
+                float t = Time.time * 5f;  // flash at 5 Hz
+                int phase = Mathf.FloorToInt(t) % 4;
+
+                // Phase 0,1 → RED on / BLUE off / WHITE off
+                // Phase 2,3 → RED off / BLUE on / WHITE on (white strobe)
+                bool redOn   = (phase == 0 || phase == 1);
+                bool blueOn  = (phase == 2 || phase == 3);
+                bool whiteOn = (phase == 1 || phase == 3);
+
+                if (_sirenRedRend   != null) _sirenRedRend.enabled   = redOn;
+                if (_sirenBlueRend  != null) _sirenBlueRend.enabled  = blueOn;
+                if (_sirenWhiteRend != null) _sirenWhiteRend.enabled = whiteOn;
+
+                // Also flash the overall light bar visibility
+                emergencyFlashingLight.SetActive(true);
             }
 
-            // Dynamic Taillights / Brake lights
+            // ── Brake lights (emissive color shift) ─────────────────────────
             if (taillightRenderer != null)
             {
-                Color brakeColor = (currentSpeed < 1.0f || isStopped) ? new Color(1f, 0.05f, 0.05f) : new Color(0.35f, 0.05f, 0.05f);
-                taillightRenderer.material.color = brakeColor;
+                bool braking = (currentSpeed < 1.0f || isStopped);
+                Color tlColor = braking ? new Color(1f, 0.04f, 0.04f) : new Color(0.32f, 0.04f, 0.04f);
+                taillightRenderer.material.color = tlColor;
+                if (taillightRenderer.material.HasProperty("_EmissionColor"))
+                {
+                    if (braking)
+                    {
+                        taillightRenderer.material.EnableKeyword("_EMISSION");
+                        taillightRenderer.material.SetColor("_EmissionColor", new Color(0.8f, 0f, 0f));
+                    }
+                    else
+                    {
+                        taillightRenderer.material.DisableKeyword("_EMISSION");
+                    }
+                }
             }
 
-            if (currentSpeed < 0.1f)
+            waitingTime = (currentSpeed < 0.1f) ? waitingTime + Time.deltaTime : 0f;
+        }
+
+        private void CacheSirenRenderers()
+        {
+            if (emergencyFlashingLight == null) return;
+            foreach (var mr in emergencyFlashingLight.GetComponentsInChildren<MeshRenderer>())
             {
-                waitingTime += Time.deltaTime;
+                if (mr.name == "LB_Red")   _sirenRedRend   = mr;
+                if (mr.name == "LB_Blue")  _sirenBlueRend  = mr;
+                if (mr.name == "LB_White") _sirenWhiteRend = mr;
             }
-            else
-            {
-                waitingTime = 0f;
-            }
+            _sirenCacheDone = true;
         }
 
         private void DriveAlongWaypoints()

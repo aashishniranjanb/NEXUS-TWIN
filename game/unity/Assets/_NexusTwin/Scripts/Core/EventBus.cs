@@ -120,6 +120,7 @@ namespace NexusTwin.Core
         public string junctionId;
         public float probability;
         public int forecastMinutes;
+        public float confidence;
     }
 
     [Serializable]
