@@ -17,8 +17,8 @@ setup_sumo_env()
 
 import traci
 from simulation.routes.generate_routes import generate_route_file
-from src.traffic_state import TrafficStateExtractor
-from src.feature_engineering import FeatureExtractor
+from simulation.bridge.traffic_state import TrafficStateExtractor
+from intelligence.feature_engineering.feature_engineering import FeatureExtractor
 
 def generate_dataset_from_runs(num_runs: int = 3, run_duration: int = 1500):
     build_network_and_routes()

@@ -24,13 +24,13 @@ import traci
 from simulation.routes.generate_routes import generate_route_file
 from simulation.signals.fixed_time import FixedTimeController
 from simulation.signals.reactive import ReactiveAdaptiveController
-from src.traffic_state import TrafficStateExtractor
-from src.metrics_collector import MetricsCollector
-from src.scenario_engine import ScenarioEngine
-from src.strategy_generator import StrategyGenerator
-from src.strategy_optimizer import StrategyOptimizer
-from src.explainable_ai import ExplainableAIEngine
-from prediction.congestion_predictor import CongestionPredictor
+from simulation.bridge.traffic_state import TrafficStateExtractor
+from simulation.bridge.metrics_collector import MetricsCollector
+from simulation.bridge.scenario_engine import ScenarioEngine
+from intelligence.strategy.strategy_generator import StrategyGenerator
+from intelligence.strategy.strategy_optimizer import StrategyOptimizer
+from intelligence.explainability.explainable_ai import ExplainableAIEngine
+from intelligence.prediction.congestion_predictor import CongestionPredictor
 
 RESULTS_DIR = PROJECT_ROOT / "results"
 RESULTS_DIR.mkdir(exist_ok=True)

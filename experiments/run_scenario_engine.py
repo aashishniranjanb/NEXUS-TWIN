@@ -20,11 +20,11 @@ from experiments.run_baselines import setup_sumo_env, build_network_and_routes
 setup_sumo_env()
 
 import traci
-from src.traffic_state import TrafficStateExtractor
-from src.strategy_generator import StrategyGenerator
-from src.scenario_engine import ScenarioEngine
-from src.strategy_optimizer import StrategyOptimizer
-from src.explainable_ai import ExplainableAIEngine
+from simulation.bridge.traffic_state import TrafficStateExtractor
+from intelligence.strategy.strategy_generator import StrategyGenerator
+from simulation.bridge.scenario_engine import ScenarioEngine
+from intelligence.strategy.strategy_optimizer import StrategyOptimizer
+from intelligence.explainability.explainable_ai import ExplainableAIEngine
 
 def main():
     parser = argparse.ArgumentParser(description="NexusTwin Digital Twin Scenario Engine")

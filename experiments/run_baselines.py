@@ -27,8 +27,8 @@ def setup_sumo_env():
 setup_sumo_env()
 
 from simulation.routes.generate_routes import generate_route_file
-from src.traffic_state import TrafficStateExtractor
-from src.metrics_collector import MetricsCollector
+from simulation.bridge.traffic_state import TrafficStateExtractor
+from simulation.bridge.metrics_collector import MetricsCollector
 from simulation.signals.fixed_time import FixedTimeController
 from simulation.signals.reactive import ReactiveAdaptiveController
 

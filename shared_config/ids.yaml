@@ -1,0 +1,32 @@
+# NEXUS-TWIN Shared ID Contract
+# This file is the single source of truth for all identifiers
+# shared between Unity (C#) and Python backend.
+# If you change a value here, update NexusIds.cs and the Python backend.
+
+junctions:
+  - J1
+  - J2
+  - J3
+
+strategy_types:
+  - green_extend
+  - diversion
+  - dynamic_lane
+  - emergency_priority
+  - do_nothing
+
+vehicle_types:
+  - car
+  - bus
+  - truck
+  - motorcycle
+  - ambulance
+  - police
+  - fire
+
+incident_types:
+  - accident
+  - closure
+  - surge
+  - weather
+  - emergency
