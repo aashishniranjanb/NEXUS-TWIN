@@ -1,0 +1,42 @@
+{
+  "model_type": "XGBoostRegressor",
+  "model_version": "1.0.0",
+  "trained_date": "2026-08-29 13:58:02",
+  "dataset_rows": 856387,
+  "train_rows": 685109,
+  "val_rows": 171278,
+  "random_seed": 42,
+  "feature_columns": [
+    "IntersectionId",
+    "Latitude",
+    "Longitude",
+    "entry_heading_deg",
+    "exit_heading_deg",
+    "heading_delta",
+    "turn_type_encoded",
+    "is_same_street",
+    "entry_street_missing",
+    "exit_street_missing",
+    "Hour",
+    "hour_sin",
+    "hour_cos",
+    "month_sin",
+    "month_cos",
+    "is_peak_hour",
+    "is_night",
+    "is_weekend",
+    "city_encoded",
+    "intersection_log_freq",
+    "path_log_freq"
+  ],
+  "target_column": "TotalTimeStopped_p50",
+  "hyperparameters": {
+    "n_estimators": 150,
+    "max_depth": 6,
+    "learning_rate": 0.08,
+    "tree_method": "hist"
+  },
+  "frequency_encoders_file": "C:\\Users\\shang\\OneDrive\\Desktop\\traffic AI\\models\\prediction\\frequency_encoders.json",
+  "anti_leakage_verified": true,
+  "target_description": "Contextual median stopped time prediction (seconds). Not a 5-minute temporal forecast."
+}

@@ -1,0 +1,310 @@
+{
+  "RowId": {
+    "dtype": "int64",
+    "null_count": 0,
+    "null_pct": 0.0,
+    "nunique": 856387,
+    "sample_values": [
+      "1921357",
+      "1921358",
+      "1921359"
+    ]
+  },
+  "IntersectionId": {
+    "dtype": "int64",
+    "null_count": 0,
+    "null_pct": 0.0,
+    "nunique": 2559,
+    "sample_values": [
+      "0",
+      "0",
+      "0"
+    ]
+  },
+  "Latitude": {
+    "dtype": "float64",
+    "null_count": 0,
+    "null_pct": 0.0,
+    "nunique": 4799,
+    "sample_values": [
+      "33.791658500000004",
+      "33.791658500000004",
+      "33.791658500000004"
+    ]
+  },
+  "Longitude": {
+    "dtype": "float64",
+    "null_count": 0,
+    "null_pct": 0.0,
+    "nunique": 4804,
+    "sample_values": [
+      "-84.4300325",
+      "-84.4300325",
+      "-84.4300325"
+    ]
+  },
+  "EntryStreetName": {
+    "dtype": "object",
+    "null_count": 8148,
+    "null_pct": 0.951,
+    "nunique": 1723,
+    "sample_values": [
+      "Marietta Boulevard Northwest",
+      "Marietta Boulevard Northwest",
+      "Marietta Boulevard Northwest"
+    ]
+  },
+  "ExitStreetName": {
+    "dtype": "object",
+    "null_count": 6287,
+    "null_pct": 0.734,
+    "nunique": 1703,
+    "sample_values": [
+      "Marietta Boulevard Northwest",
+      "Marietta Boulevard Northwest",
+      "Marietta Boulevard Northwest"
+    ]
+  },
+  "EntryHeading": {
+    "dtype": "object",
+    "null_count": 0,
+    "null_pct": 0.0,
+    "nunique": 8,
+    "sample_values": [
+      "NW",
+      "SE",
+      "NW"
+    ]
+  },
+  "ExitHeading": {
+    "dtype": "object",
+    "null_count": 0,
+    "null_pct": 0.0,
+    "nunique": 8,
+    "sample_values": [
+      "NW",
+      "SE",
+      "NW"
+    ]
+  },
+  "Hour": {
+    "dtype": "int64",
+    "null_count": 0,
+    "null_pct": 0.0,
+    "nunique": 24,
+    "sample_values": [
+      "0",
+      "0",
+      "1"
+    ]
+  },
+  "Weekend": {
+    "dtype": "int64",
+    "null_count": 0,
+    "null_pct": 0.0,
+    "nunique": 2,
+    "sample_values": [
+      "0",
+      "0",
+      "0"
+    ]
+  },
+  "Month": {
+    "dtype": "int64",
+    "null_count": 0,
+    "null_pct": 0.0,
+    "nunique": 9,
+    "sample_values": [
+      "6",
+      "6",
+      "6"
+    ]
+  },
+  "Path": {
+    "dtype": "object",
+    "null_count": 0,
+    "null_pct": 0.0,
+    "nunique": 15075,
+    "sample_values": [
+      "Marietta Boulevard Northwest_NW_Marietta Boulevard Northwest_NW",
+      "Marietta Boulevard Northwest_SE_Marietta Boulevard Northwest_SE",
+      "Marietta Boulevard Northwest_NW_Marietta Boulevard Northwest_NW"
+    ]
+  },
+  "TotalTimeStopped_p20": {
+    "dtype": "float64",
+    "null_count": 0,
+    "null_pct": 0.0,
+    "nunique": 171,
+    "sample_values": [
+      "0.0",
+      "0.0",
+      "0.0"
+    ]
+  },
+  "TotalTimeStopped_p40": {
+    "dtype": "float64",
+    "null_count": 0,
+    "null_pct": 0.0,
+    "nunique": 238,
+    "sample_values": [
+      "0.0",
+      "0.0",
+      "0.0"
+    ]
+  },
+  "TotalTimeStopped_p50": {
+    "dtype": "float64",
+    "null_count": 0,
+    "null_pct": 0.0,
+    "nunique": 262,
+    "sample_values": [
+      "0.0",
+      "0.0",
+      "0.0"
+    ]
+  },
+  "TotalTimeStopped_p60": {
+    "dtype": "float64",
+    "null_count": 0,
+    "null_pct": 0.0,
+    "nunique": 306,
+    "sample_values": [
+      "0.0",
+      "0.0",
+      "0.0"
+    ]
+  },
+  "TotalTimeStopped_p80": {
+    "dtype": "float64",
+    "null_count": 0,
+    "null_pct": 0.0,
+    "nunique": 403,
+    "sample_values": [
+      "0.0",
+      "0.0",
+      "0.0"
+    ]
+  },
+  "TimeFromFirstStop_p20": {
+    "dtype": "float64",
+    "null_count": 0,
+    "null_pct": 0.0,
+    "nunique": 244,
+    "sample_values": [
+      "0.0",
+      "0.0",
+      "0.0"
+    ]
+  },
+  "TimeFromFirstStop_p40": {
+    "dtype": "float64",
+    "null_count": 0,
+    "null_pct": 0.0,
+    "nunique": 316,
+    "sample_values": [
+      "0.0",
+      "0.0",
+      "0.0"
+    ]
+  },
+  "TimeFromFirstStop_p50": {
+    "dtype": "float64",
+    "null_count": 0,
+    "null_pct": 0.0,
+    "nunique": 336,
+    "sample_values": [
+      "0.0",
+      "0.0",
+      "0.0"
+    ]
+  },
+  "TimeFromFirstStop_p60": {
+    "dtype": "float64",
+    "null_count": 0,
+    "null_pct": 0.0,
+    "nunique": 353,
+    "sample_values": [
+      "0.0",
+      "0.0",
+      "0.0"
+    ]
+  },
+  "TimeFromFirstStop_p80": {
+    "dtype": "float64",
+    "null_count": 0,
+    "null_pct": 0.0,
+    "nunique": 355,
+    "sample_values": [
+      "0.0",
+      "0.0",
+      "0.0"
+    ]
+  },
+  "DistanceToFirstStop_p20": {
+    "dtype": "float64",
+    "null_count": 0,
+    "null_pct": 0.0,
+    "nunique": 3631,
+    "sample_values": [
+      "0.0",
+      "0.0",
+      "0.0"
+    ]
+  },
+  "DistanceToFirstStop_p40": {
+    "dtype": "float64",
+    "null_count": 0,
+    "null_pct": 0.0,
+    "nunique": 6415,
+    "sample_values": [
+      "0.0",
+      "0.0",
+      "0.0"
+    ]
+  },
+  "DistanceToFirstStop_p50": {
+    "dtype": "float64",
+    "null_count": 0,
+    "null_pct": 0.0,
+    "nunique": 7751,
+    "sample_values": [
+      "0.0",
+      "0.0",
+      "0.0"
+    ]
+  },
+  "DistanceToFirstStop_p60": {
+    "dtype": "float64",
+    "null_count": 0,
+    "null_pct": 0.0,
+    "nunique": 9826,
+    "sample_values": [
+      "0.0",
+      "0.0",
+      "0.0"
+    ]
+  },
+  "DistanceToFirstStop_p80": {
+    "dtype": "float64",
+    "null_count": 0,
+    "null_pct": 0.0,
+    "nunique": 13689,
+    "sample_values": [
+      "0.0",
+      "0.0",
+      "0.0"
+    ]
+  },
+  "City": {
+    "dtype": "object",
+    "null_count": 0,
+    "null_pct": 0.0,
+    "nunique": 4,
+    "sample_values": [
+      "Atlanta",
+      "Atlanta",
+      "Atlanta"
+    ]
+  }
+}

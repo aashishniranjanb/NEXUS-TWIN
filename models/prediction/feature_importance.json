@@ -1,0 +1,23 @@
+{
+  "turn_type_encoded": 0.24563,
+  "heading_delta": 0.11571,
+  "is_same_street": 0.09145,
+  "hour_cos": 0.07184,
+  "is_weekend": 0.06002,
+  "city_encoded": 0.05882,
+  "intersection_log_freq": 0.04826,
+  "path_log_freq": 0.03553,
+  "Latitude": 0.03431,
+  "entry_street_missing": 0.03306,
+  "Longitude": 0.03172,
+  "IntersectionId": 0.02914,
+  "entry_heading_deg": 0.0227,
+  "is_peak_hour": 0.02222,
+  "Hour": 0.02108,
+  "is_night": 0.01956,
+  "exit_heading_deg": 0.01919,
+  "hour_sin": 0.01478,
+  "exit_street_missing": 0.01448,
+  "month_sin": 0.00532,
+  "month_cos": 0.00518
+}

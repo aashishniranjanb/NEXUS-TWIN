@@ -1,0 +1,51 @@
+{
+  "dataset_total_records": 856387,
+  "peak_morning_hour": 8,
+  "peak_evening_hour": 16,
+  "overall_mean_p50_wait_s": 7.72,
+  "overall_median_p50_wait_s": 0.0,
+  "city_mean_wait_s": {
+    "Atlanta": 9.74,
+    "Boston": 8.6,
+    "Chicago": 7.14,
+    "Philadelphia": 6.71
+  },
+  "turn_mean_wait_s": {
+    "Left": 15.58,
+    "Right": 8.58,
+    "Straight": 5.81,
+    "U-Turn": 21.22
+  },
+  "top_congested_intersections": [
+    {
+      "city": "Boston",
+      "intersection_id": 35,
+      "mean_p50_wait_s": 52.15,
+      "obs_count": 306
+    },
+    {
+      "city": "Philadelphia",
+      "intersection_id": 463,
+      "mean_p50_wait_s": 46.22,
+      "obs_count": 559
+    },
+    {
+      "city": "Boston",
+      "intersection_id": 100,
+      "mean_p50_wait_s": 43.34,
+      "obs_count": 213
+    },
+    {
+      "city": "Boston",
+      "intersection_id": 997,
+      "mean_p50_wait_s": 41.43,
+      "obs_count": 295
+    },
+    {
+      "city": "Boston",
+      "intersection_id": 171,
+      "mean_p50_wait_s": 41.07,
+      "obs_count": 246
+    }
+  ]
+}

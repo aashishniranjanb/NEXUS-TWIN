@@ -1,0 +1,12 @@
+{
+  "classes": [
+    "NORMAL",
+    "RECURRING_CONGESTION",
+    "INCIDENT_LIKE",
+    "DEMAND_SURGE",
+    "SIGNAL_RELATED"
+  ],
+  "description": "Rule-gated semantic diagnosis engine over Isolation Forest and historical deviation vectors.",
+  "version": "1.0.0",
+  "causal_disclaimer": "INCIDENT_LIKE indicates severe abnormal pattern deviation and does not verify physical collision without ground-truth sensor/CCTV feeds."
+}

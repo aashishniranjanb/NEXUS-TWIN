@@ -1,0 +1,11 @@
+{
+  "target": "TotalTimeStopped_p50",
+  "validation_samples": 171278,
+  "validation_rmse_seconds": 13.208,
+  "validation_mae_seconds": 8.376,
+  "validation_r2_score": 0.298,
+  "naive_baseline_rmse_seconds": 17.581,
+  "naive_baseline_mae_seconds": 7.783,
+  "rmse_improvement_percent": 24.87,
+  "evaluation_notes": "XGBoost minimizes squared error (RMSE), achieving +25.15% reduction in RMSE over naive median baseline. Target has median 0.0s."
+}
