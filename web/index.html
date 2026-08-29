@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEXUS-TWIN — Traffic Intelligence Command Center</title>
+    <title>NEXUS-TWIN — Traffic Intelligence & Decision Command Center</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,7 +19,7 @@
                 <div class="brand-logo">⚡</div>
                 <div>
                     <h1 class="brand-title">NEXUS-TWIN</h1>
-                    <div class="brand-subtitle">AI URBAN TRAFFIC INTELLIGENCE</div>
+                    <div class="brand-subtitle">AI URBAN TRAFFIC INTELLIGENCE & DECISION PLATFORM</div>
                 </div>
             </div>
 
@@ -61,8 +61,8 @@
                 <span class="metric-val" id="globalDelay">0.28 s</span>
             </div>
             <div class="metric-box highlight-box">
-                <span class="metric-label">AT-RISK JUNCTION</span>
-                <span class="metric-val danger-text" id="globalAtRisk">J2 (CRITICAL)</span>
+                <span class="metric-label">DECISION STATE</span>
+                <span class="metric-val danger-text" id="globalDecisionState">AWAITING HUMAN ACTION</span>
             </div>
         </section>
 
@@ -76,7 +76,7 @@
                     <div class="panel-header">
                         <div class="panel-title-wrap">
                             <h2>J1 — J2 — J3 Urban Traffic Corridor</h2>
-                            <span class="panel-sub">Interactive Topology & Live Queue Propagation</span>
+                            <span class="panel-sub">Interactive Topology & Real-Time Flow Propagation</span>
                         </div>
                         <div class="map-controls">
                             <!-- Overlay Toggle Badges -->
@@ -92,7 +92,7 @@
 
                     <!-- Canvas Traffic Network -->
                     <div class="canvas-container">
-                        <canvas id="networkCanvas" width="800" height="340"></canvas>
+                        <canvas id="networkCanvas" width="800" height="320"></canvas>
                         
                         <!-- Map Interactive Legend -->
                         <div class="map-legend">
@@ -188,7 +188,25 @@
 
                 </div>
 
-                <!-- DOMINO CONGESTION PROPAGATION MATRIX PANEL (P1 Hero) -->
+                <!-- COUNTERFACTUAL FUTURES & DIGITAL TWIN COMPARISON MATRIX (P2 Hero) -->
+                <div class="panel counterfactual-panel">
+                    <div class="panel-header">
+                        <div class="panel-title-wrap">
+                            <h2>Counterfactual Futures — Digital Twin What-If Evaluation</h2>
+                            <span class="panel-sub">Simulated Candidate Interventions vs Do-Nothing Baseline</span>
+                        </div>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <span class="ai-badge">Multi-Objective Scored</span>
+                            <button class="btn btn-secondary btn-sm" id="btnReevaluate">Simulate Alternatives</button>
+                        </div>
+                    </div>
+
+                    <div class="future-cards-grid" id="futureCardsGrid">
+                        <!-- Populated Dynamically by JS -->
+                    </div>
+                </div>
+
+                <!-- DOMINO CASCADE MATRIX (P1 Hero) -->
                 <div class="panel domino-panel">
                     <div class="panel-header">
                         <div class="panel-title-wrap">
@@ -206,10 +224,69 @@
             </section>
 
 
-            <!-- RIGHT 4-COLUMN: AI INTELLIGENCE RAIL -->
+            <!-- RIGHT 4-COLUMN: DECISION SUPPORT & AI INTELLIGENCE RAIL -->
             <section class="intelligence-column">
                 
-                <!-- 1. INTELLIGENCE SUMMARY & INTERVENTION WINDOW -->
+                <!-- 1. AI RECOMMENDATION & HUMAN DECISION ACTION PANEL (P2 Central Hero) -->
+                <div class="panel decision-panel highlight-panel">
+                    <div class="panel-header">
+                        <div class="panel-title-wrap">
+                            <h2>AI Intervention Recommendation</h2>
+                            <span class="panel-sub" id="recTargetSub">Target: Junction J2</span>
+                        </div>
+                        <span class="rec-confidence-badge" id="recConfidenceBadge">HIGH CONFIDENCE (89%)</span>
+                    </div>
+
+                    <div class="recommendation-hero">
+                        <div class="rec-action-row">
+                            <span class="rec-action-icon">💡</span>
+                            <div>
+                                <div class="rec-strategy-title" id="recStrategyTitle">ACTIVATE DYNAMIC BYPASS LANE</div>
+                                <div class="rec-strategy-tagline" id="recStrategyTagline">Selected by Multi-Objective Optimizer (Score: 21.4)</div>
+                            </div>
+                        </div>
+                        
+                        <div class="rec-impact-box">
+                            <div class="impact-stat">
+                                <span class="impact-lbl">Network Delay</span>
+                                <span class="impact-val green-text" id="recImpactDelay">-34%</span>
+                            </div>
+                            <div class="impact-stat">
+                                <span class="impact-lbl">Queue Clearance</span>
+                                <span class="impact-val green-text" id="recImpactQueue">-28%</span>
+                            </div>
+                            <div class="impact-stat">
+                                <span class="impact-lbl">Spillover Risk</span>
+                                <span class="impact-val green-text" id="recImpactSpillover">LOW</span>
+                            </div>
+                            <div class="impact-stat">
+                                <span class="impact-lbl">EMS Route</span>
+                                <span class="impact-val green-text" id="recImpactSafety">SAFE</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Grounded Explanation Section -->
+                    <div class="explanation-box">
+                        <div class="explanation-title">WHY THIS DECISION? (GROUNDED EVIDENCE)</div>
+                        <p class="explanation-text" id="recExplanationText">
+                            Dynamic lane at J2 relieves eastbound backlog without diverting overflow onto residential connectors. Outperforms Diversion (-31% delay) and Green Extend (-18% delay) while preserving emergency corridor clearance.
+                        </p>
+                    </div>
+
+                    <!-- HUMAN OPERATOR ACTION CONTROLS -->
+                    <div class="human-decision-box">
+                        <div class="human-prompt-label">HUMAN OPERATOR DECISION AUTHORITY:</div>
+                        <div class="human-buttons-row">
+                            <button class="btn btn-approve" id="btnApproveStrategy">APPROVE & APPLY</button>
+                            <button class="btn btn-try-another" id="btnTryAnother">TRY ANOTHER</button>
+                            <button class="btn btn-reject" id="btnRejectStrategy">REJECT</button>
+                        </div>
+                        <div class="decision-status-text" id="decisionStatusMsg">Awaiting operator authorization...</div>
+                    </div>
+                </div>
+
+                <!-- 2. INTERVENTION WINDOW & TIME BOUNDS -->
                 <div class="panel intervention-panel">
                     <div class="panel-header">
                         <div class="panel-title-wrap">
@@ -228,7 +305,7 @@
                     </div>
                 </div>
 
-                <!-- 2. ANOMALY DETECTION & PATTERN FINGERPRINT -->
+                <!-- 3. TRAFFIC FINGERPRINT & EVIDENCE -->
                 <div class="panel ai-panel">
                     <div class="panel-header">
                         <div class="panel-title-wrap">
@@ -251,52 +328,10 @@
                     </div>
                 </div>
 
-                <!-- 3. AI PREDICTION PANEL -->
-                <div class="panel ai-panel">
-                    <div class="panel-header">
-                        <div class="panel-title-wrap">
-                            <h2>AI Congestion Forecast</h2>
-                            <span class="panel-sub" id="predTargetNode">Target: Junction J2</span>
-                        </div>
-                        <span class="ai-badge">XGBoost ML</span>
-                    </div>
-
-                    <div class="pred-highlight-box">
-                        <div class="pred-meta">
-                            <span class="pred-label">CONGESTION PROBABILITY</span>
-                            <span class="pred-horizon">5-MIN HORIZON</span>
-                        </div>
-                        <div class="pred-stat-row">
-                            <span class="pred-percentage danger-text" id="predProbability">87%</span>
-                            <div class="pred-risk-badge bg-danger" id="predRiskBadge">CRITICAL RISK</div>
-                        </div>
-                    </div>
-
-                    <div class="pred-details-list">
-                        <div class="pred-detail-row">
-                            <span class="detail-label">Model Confidence</span>
-                            <span class="detail-val" id="predConfidence">82%</span>
-                        </div>
-                        <div class="pred-detail-row">
-                            <span class="detail-label">Predicted Queue Growth</span>
-                            <span class="detail-val danger-text" id="predQueueDelta">+34.0 m</span>
-                        </div>
-                        <div class="pred-detail-row">
-                            <span class="detail-label">Isolation Forest Score</span>
-                            <span class="detail-val highlight-cyan" id="anomScoreVal">0.91 (Anomaly Detected)</span>
-                        </div>
-                    </div>
-
-                    <div class="responsible-ai-note">
-                        <span class="note-icon">ℹ️</span>
-                        <span>Probabilistic forecast computed from XGBoost trained on Geotab baseline distributions.</span>
-                    </div>
-                </div>
-
-                <!-- 4. REALTIME INTELLIGENCE EVENT FEED -->
+                <!-- 4. REALTIME INTELLIGENCE & DECISION AUDIT TIMELINE -->
                 <div class="panel event-feed-panel">
                     <div class="panel-header">
-                        <h2>Intelligence Event Feed</h2>
+                        <h2>Decision & Intelligence Audit Trail</h2>
                         <span class="live-pulse-dot"></span>
                     </div>
                     <div class="event-feed-list" id="eventFeedList">
@@ -310,7 +345,7 @@
 
     </div>
 
-    <!-- P1 Intelligence Frontend Scripts -->
+    <!-- P2 Decision Frontend Scripts -->
     <script src="app.js"></script>
 </body>
 </html>

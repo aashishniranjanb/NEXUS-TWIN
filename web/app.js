@@ -1,18 +1,39 @@
 /**
- * NEXUS-TWIN P1 Intelligence Command Center Web Application
- * Implements: Anomaly Detection, Traffic Fingerprint, NetworkX Domino Spillover, and Intervention Window
+ * NEXUS-TWIN P2 Decision Support Command Center Web Application
+ * Implements: Counterfactual Futures Simulation, Multi-Objective Optimizer Evaluation,
+ * Grounded Explainability, Human Operator Decision State Machine (Approve/Reject/Try Another),
+ * and Applied Strategy Result Transition.
  */
 
 // API Base Configuration
 const API_BASE = "http://localhost:8000/api";
 
-// Central P1 Intelligence Application State
+// Decision State Machine Definitions
+const DECISION_STATES = {
+    IDLE: "IDLE",
+    TRIGGERED: "TRIGGERED",
+    EVALUATING: "EVALUATING",
+    EVALUATED: "EVALUATED",
+    RECOMMENDED: "RECOMMENDED",
+    AWAITING_HUMAN: "AWAITING_HUMAN",
+    APPROVED: "APPROVED",
+    REJECTED: "REJECTED",
+    APPLIED: "APPLIED",
+    MONITORING: "MONITORING"
+};
+
+// Central P2 Application State
 const appState = {
     selectedJunction: "J2",
     connectionStatus: "CHECKING", // "ONLINE" | "DEMO_MODE" | "RECONNECTING"
     lastUpdated: new Date(),
     isDemoScenario: false,
     
+    // Decision State Machine
+    decisionState: DECISION_STATES.AWAITING_HUMAN,
+    selectedCandidateId: "cand_dynamic_lane",
+    appliedStrategy: null,
+
     // Layer visibility toggles
     layers: {
         traffic: true,
@@ -41,6 +62,74 @@ const appState = {
         J3: { junctionId: "J3", congestionProbability: 0.52, forecastMinutes: 5, confidence: 0.79, riskLevel: "warning", predictedQueueGrowth: "+11.0 m", fingerprint: "RECURRING CONGESTION", fpConfidence: 0.84, fpSeverity: "warning", evidence: [{ metric: "Downstream Drag", value: "+12% / min", dir: "increasing" }, { metric: "Exit Speed", value: "29.0 km/h", dir: "moderate" }] }
     },
 
+    // Counterfactual Candidate Futures (Evaluated by Digital Twin Scenario Engine)
+    candidates: [
+        {
+            id: "cand_dynamic_lane",
+            type: "dynamic_lane",
+            name: "Activate Dynamic Lane",
+            rank: 1,
+            score: 21.4,
+            delayDeltaPct: -34,
+            queueDeltaPct: -28,
+            throughputDeltaPct: +24,
+            spillback: "LOW",
+            emergencySafety: "SAFE",
+            isRecommended: true,
+            isBaseline: false,
+            success: true,
+            explanation: "Dynamic lane at J2 relieves eastbound backlog without diverting overflow onto residential connectors. Best network score (21.4)."
+        },
+        {
+            id: "cand_diversion",
+            type: "diversion",
+            name: "30% Traffic Diversion",
+            rank: 2,
+            score: 27.8,
+            delayDeltaPct: -31,
+            queueDeltaPct: -25,
+            throughputDeltaPct: +16,
+            spillback: "MODERATE (J3 +8%)",
+            emergencySafety: "SAFE",
+            isRecommended: false,
+            isBaseline: false,
+            success: true,
+            explanation: "Diverts flow to arterial routes, but incurs minor downstream queue displacement near J3."
+        },
+        {
+            id: "cand_green_extend",
+            type: "green_extend",
+            name: "Extend Green (+20s)",
+            rank: 3,
+            score: 34.2,
+            delayDeltaPct: -18,
+            queueDeltaPct: -15,
+            throughputDeltaPct: +10,
+            spillback: "HIGH (J1 +18%)",
+            emergencySafety: "WARNING (Cross street delay)",
+            isRecommended: false,
+            isBaseline: false,
+            success: true,
+            explanation: "Clears local J2 queue but starves north-south feeder movements, elevating J1 spillover risk."
+        },
+        {
+            id: "cand_do_nothing",
+            type: "do_nothing",
+            name: "No Action (Baseline)",
+            rank: 4,
+            score: 52.1,
+            delayDeltaPct: +4,
+            queueDeltaPct: +12,
+            throughputDeltaPct: -8,
+            spillback: "CRITICAL (J2 -> J1 in 6 min)",
+            emergencySafety: "UNSAFE (Gridlock in 8 min)",
+            isRecommended: false,
+            isBaseline: true,
+            success: true,
+            explanation: "Unmitigated queue buildup leads to complete corridor blockage and gridlock."
+        }
+    ],
+
     // Domino Propagation Paths
     domino: {
         sourceJunctionId: "J2",
@@ -59,13 +148,13 @@ const appState = {
         severity: "critical"
     },
 
-    // Realtime Event Feed (Newest first, max 5)
+    // Realtime Event Feed & Decision Audit Log (Newest first, max 5)
     events: [
         { id: 1, text: "Anomaly detected at J2 (Isolation Forest score: 0.91)", severity: "critical", time: "12:40:12" },
-        { id: 2, text: "Traffic Fingerprint classified as RAPID QUEUE BUILD-UP (89%)", severity: "warning", time: "12:40:14" },
-        { id: 3, text: "J1 spillover probability increased to 73% (ETA: 4 min)", severity: "warning", time: "12:40:18" },
-        { id: 4, text: "Intervention Window calculated: 06:00 min remaining before J1 gridlock", severity: "critical", time: "12:40:22" },
-        { id: 5, text: "Geotab hourly baseline deviation index mapped: 0.91 similarity", severity: "normal", time: "12:40:25" }
+        { id: 2, text: "Digital Twin simulated 4 counterfactual futures for J2 decision point", severity: "success", time: "12:40:15" },
+        { id: 3, text: "Multi-Objective Optimizer ranked Dynamic Lane as best candidate (Score: 21.4)", severity: "success", time: "12:40:18" },
+        { id: 4, text: "AI Recommendation presented to operator. Awaiting authorization...", severity: "warning", time: "12:40:20" },
+        { id: 5, text: "Intervention Window calculated: 06:00 min remaining before J1 spillover", severity: "warning", time: "12:40:24" }
     ]
 };
 
@@ -95,7 +184,7 @@ async function fetchTrafficIntelligence() {
         const res = await fetch(`${API_BASE}/evaluate`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ junction_id: appState.selectedJunction, horizon_seconds: 300, strategy_type: "diversion" }),
+            body: JSON.stringify({ junction_id: appState.selectedJunction, horizon_seconds: 300, strategy_type: "dynamic_lane" }),
             signal: AbortSignal.timeout(2500)
         });
 
@@ -113,7 +202,6 @@ async function fetchTrafficIntelligence() {
 function normalizeIntelligenceData(backendData) {
     if (!backendData) return;
     
-    // Normalize live situation telemetry
     if (backendData.situation) {
         const s = backendData.situation;
         appState.traffic.avgWaitingTimeSeconds = s.avg_waiting_time_s || appState.traffic.avgWaitingTimeSeconds;
@@ -125,26 +213,6 @@ function normalizeIntelligenceData(backendData) {
         if (curJ) {
             curJ.queueMeters = s.queue_length_m || curJ.queueMeters;
             curJ.speedKmh = s.avg_speed_kmh || curJ.speedKmh;
-        }
-    }
-
-    // Normalize AI prediction & fingerprint
-    if (backendData.prediction) {
-        const p = backendData.prediction;
-        const curPred = appState.predictions[appState.selectedJunction];
-        if (curPred) {
-            curPred.congestionProbability = p.congestion_probability || curPred.congestionProbability;
-            curPred.predictedQueueGrowth = p.predicted_queue_5min_m ? `+${p.predicted_queue_5min_m.toFixed(1)} m` : curPred.predictedQueueGrowth;
-            curPred.riskLevel = p.will_congest_5min ? "critical" : "low";
-        }
-    }
-
-    if (backendData.fingerprint) {
-        const fp = backendData.fingerprint;
-        const curPred = appState.predictions[appState.selectedJunction];
-        if (curPred && fp.pattern_type) {
-            curPred.fingerprint = fp.pattern_type.replace('_', ' ');
-            curPred.fpConfidence = fp.dataset_similarity_score || 0.89;
         }
     }
 
@@ -170,19 +238,34 @@ function setConnectionStatus(status) {
 }
 
 // ==============================================================================
-// 2. UI RENDERING & COMPONENT BINDINGS
+// 2. UI RENDERING & DECISION STATE MACHINE
 // ==============================================================================
 
 function updateUI() {
-    // 1. Global Metrics
+    // 1. Global Metrics & Decision State
     const spdEl = document.getElementById("globalSpeed");
     const vehEl = document.getElementById("globalVehicles");
     const qEl = document.getElementById("globalQueue");
     const dlyEl = document.getElementById("globalDelay");
+    const decStateEl = document.getElementById("globalDecisionState");
+
     if (spdEl) spdEl.textContent = `${appState.traffic.networkSpeedKmh.toFixed(1)} km/h`;
     if (vehEl) vehEl.textContent = `${appState.traffic.totalVehicles}`;
     if (qEl) qEl.textContent = `${appState.traffic.totalQueueMeters.toFixed(1)} m`;
     if (dlyEl) dlyEl.textContent = `${appState.traffic.avgWaitingTimeSeconds.toFixed(2)} s`;
+    
+    if (decStateEl) {
+        if (appState.decisionState === DECISION_STATES.APPLIED) {
+            decStateEl.textContent = `APPLIED (${appState.appliedStrategy.toUpperCase()})`;
+            decStateEl.className = "metric-val green-text";
+        } else if (appState.decisionState === DECISION_STATES.REJECTED) {
+            decStateEl.textContent = "DECISION REJECTED (NO ACTION)";
+            decStateEl.className = "metric-val amber-text";
+        } else {
+            decStateEl.textContent = "AWAITING HUMAN ACTION";
+            decStateEl.className = "metric-val danger-text";
+        }
+    }
 
     // 2. Junction Cards
     ["J1", "J2", "J3"].forEach(jId => {
@@ -222,66 +305,56 @@ function updateUI() {
         }
     });
 
-    // 3. AI Prediction & Fingerprint Panel for Selected Node
-    const curPred = appState.predictions[appState.selectedJunction] || appState.predictions.J2;
-    const targetLabel = document.getElementById("predTargetNode");
-    const probEl = document.getElementById("predProbability");
-    const riskBadge = document.getElementById("predRiskBadge");
-    const confEl = document.getElementById("predConfidence");
-    const qDeltaEl = document.getElementById("predQueueDelta");
-    const anomScoreEl = document.getElementById("anomScoreVal");
+    // 3. Counterfactual Futures Cards Grid
+    const futureGrid = document.getElementById("futureCardsGrid");
+    if (futureGrid) {
+        futureGrid.innerHTML = "";
+        appState.candidates.forEach(c => {
+            const card = document.createElement("div");
+            const isSelected = (c.id === appState.selectedCandidateId);
+            card.className = `future-card ${c.isRecommended ? 'recommended-future' : ''} ${c.isBaseline ? 'baseline-future' : ''} ${isSelected ? 'selected-card' : ''}`;
+            card.dataset.candidateId = c.id;
+            
+            let badgeHtml = "";
+            if (c.isRecommended) badgeHtml = `<span class="future-badge badge-best">★ BEST</span>`;
+            else if (c.isBaseline) badgeHtml = `<span class="future-badge badge-base">BASELINE</span>`;
 
-    if (targetLabel) targetLabel.textContent = `Target: Junction ${appState.selectedJunction}`;
-    if (probEl) probEl.textContent = `${Math.round(curPred.congestionProbability * 100)}%`;
-    if (confEl) confEl.textContent = `${Math.round(curPred.confidence * 100)}%`;
-    if (qDeltaEl) qDeltaEl.textContent = curPred.predictedQueueGrowth;
-    
-    const curJ = appState.traffic.junctions[appState.selectedJunction];
-    if (anomScoreEl) anomScoreEl.textContent = `${curJ.anomalyScore.toFixed(2)} (${curJ.anomalyScore >= 0.8 ? 'Anomaly Detected' : 'Nominal'})`;
+            card.innerHTML = `
+                ${badgeHtml}
+                <div class="future-title">${c.name}</div>
+                <div class="future-score-row">
+                    <span>Rank #${c.rank}</span>
+                    <strong class="${c.isRecommended ? 'green-text' : 'highlight'}">Score: ${c.score.toFixed(1)}</strong>
+                </div>
+                <div class="future-deltas">
+                    <div class="delta-row">
+                        <span class="lbl">Delay Delta:</span>
+                        <strong class="${c.delayDeltaPct < 0 ? 'green-text' : 'danger-text'}">${c.delayDeltaPct > 0 ? '+' : ''}${c.delayDeltaPct}%</strong>
+                    </div>
+                    <div class="delta-row">
+                        <span class="lbl">Queue Clearance:</span>
+                        <strong class="${c.queueDeltaPct < 0 ? 'green-text' : 'danger-text'}">${c.queueDeltaPct > 0 ? '+' : ''}${c.queueDeltaPct}%</strong>
+                    </div>
+                    <div class="delta-row">
+                        <span class="lbl">Spillback:</span>
+                        <span style="font-size: 9.5px;" class="${c.spillback.includes('LOW') ? 'green-text' : 'amber-text'}">${c.spillback}</span>
+                    </div>
+                </div>
+            `;
+            
+            card.addEventListener("click", () => {
+                appState.selectedCandidateId = c.id;
+                renderRecommendationForCandidate(c);
+                updateUI();
+            });
 
-    if (riskBadge) {
-        if (curPred.riskLevel === "critical") {
-            riskBadge.textContent = "CRITICAL RISK";
-            riskBadge.className = "pred-risk-badge bg-danger";
-        } else if (curPred.riskLevel === "warning") {
-            riskBadge.textContent = "ELEVATED RISK";
-            riskBadge.className = "pred-risk-badge";
-            riskBadge.style.background = "rgba(255, 176, 32, 0.2)";
-            riskBadge.style.border = "1px solid var(--amber)";
-            riskBadge.style.color = "var(--amber)";
-        } else {
-            riskBadge.textContent = "STABLE RISK";
-            riskBadge.className = "pred-risk-badge";
-            riskBadge.style.background = "rgba(57, 231, 95, 0.15)";
-            riskBadge.style.border = "1px solid var(--green)";
-            riskBadge.style.color = "var(--green)";
-        }
-    }
-
-    // 4. Fingerprint & Evidence Panel
-    const fpTarget = document.getElementById("fingerprintTarget");
-    const fpLabel = document.getElementById("fingerprintLabel");
-    const fpConf = document.getElementById("fingerprintConfidence");
-    const fpSev = document.getElementById("fingerprintSeverity");
-    const fpEvidence = document.getElementById("fingerprintEvidenceList");
-
-    if (fpTarget) fpTarget.textContent = `Target: Junction ${appState.selectedJunction}`;
-    if (fpLabel) fpLabel.textContent = curPred.fingerprint;
-    if (fpConf) fpConf.textContent = `Confidence: ${Math.round(curPred.fpConfidence * 100)}% (Geotab Pattern Match)`;
-    if (fpSev) {
-        fpSev.textContent = curPred.fpSeverity.toUpperCase();
-        fpSev.className = `status-pill status-${curPred.fpSeverity}`;
-    }
-
-    if (fpEvidence && curPred.evidence) {
-        fpEvidence.innerHTML = "";
-        curPred.evidence.forEach(ev => {
-            const row = document.createElement("div");
-            row.className = "evidence-item";
-            row.innerHTML = `<span>${ev.metric}</span><strong class="highlight">${ev.value}</strong>`;
-            fpEvidence.appendChild(row);
+            futureGrid.appendChild(card);
         });
     }
+
+    // 4. Recommendation & Explanation for Active Candidate
+    const activeCand = appState.candidates.find(c => c.id === appState.selectedCandidateId) || appState.candidates[0];
+    renderRecommendationForCandidate(activeCand);
 
     // 5. Domino Propagation Panel
     const dominoContainer = document.getElementById("dominoPathsGrid");
@@ -316,7 +389,33 @@ function updateUI() {
         iwDesc.innerHTML = `Origin at <strong class="danger-text">${iw.sourceJunctionId}</strong> has an estimated <strong>${iw.minutesRemaining} minutes</strong> before queue spillback cascades upstream into <strong class="amber-text">${iw.targetJunctionId}</strong>.`;
     }
 
-    // 7. Event Feed
+    // 7. Fingerprint & Evidence Panel
+    const curPred = appState.predictions[appState.selectedJunction] || appState.predictions.J2;
+    const fpTarget = document.getElementById("fingerprintTarget");
+    const fpLabel = document.getElementById("fingerprintLabel");
+    const fpConf = document.getElementById("fingerprintConfidence");
+    const fpSev = document.getElementById("fingerprintSeverity");
+    const fpEvidence = document.getElementById("fingerprintEvidenceList");
+
+    if (fpTarget) fpTarget.textContent = `Target: Junction ${appState.selectedJunction}`;
+    if (fpLabel) fpLabel.textContent = curPred.fingerprint;
+    if (fpConf) fpConf.textContent = `Confidence: ${Math.round(curPred.fpConfidence * 100)}% (Geotab Pattern Match)`;
+    if (fpSev) {
+        fpSev.textContent = curPred.fpSeverity.toUpperCase();
+        fpSev.className = `status-pill status-${curPred.fpSeverity}`;
+    }
+
+    if (fpEvidence && curPred.evidence) {
+        fpEvidence.innerHTML = "";
+        curPred.evidence.forEach(ev => {
+            const row = document.createElement("div");
+            row.className = "evidence-item";
+            row.innerHTML = `<span>${ev.metric}</span><strong class="highlight">${ev.value}</strong>`;
+            fpEvidence.appendChild(row);
+        });
+    }
+
+    // 8. Event Feed & Decision Audit Trail
     const feedContainer = document.getElementById("eventFeedList");
     if (feedContainer) {
         feedContainer.innerHTML = "";
@@ -328,7 +427,7 @@ function updateUI() {
         });
     }
 
-    // 8. Last Updated
+    // 9. Last Updated
     const lastUp = document.getElementById("lastUpdatedText");
     if (lastUp) {
         const secAgo = Math.max(0, Math.floor((Date.now() - appState.lastUpdated.getTime()) / 1000));
@@ -336,8 +435,120 @@ function updateUI() {
     }
 }
 
+function renderRecommendationForCandidate(cand) {
+    const titleEl = document.getElementById("recStrategyTitle");
+    const taglineEl = document.getElementById("recStrategyTagline");
+    const delayEl = document.getElementById("recImpactDelay");
+    const queueEl = document.getElementById("recImpactQueue");
+    const spillEl = document.getElementById("recImpactSpillover");
+    const safetyEl = document.getElementById("recImpactSafety");
+    const expText = document.getElementById("recExplanationText");
+    const confBadge = document.getElementById("recConfidenceBadge");
+
+    if (titleEl) titleEl.textContent = cand.name.toUpperCase();
+    if (taglineEl) taglineEl.textContent = `${cand.isRecommended ? 'AI RECOMMENDED' : 'OPERATOR ALTERNATIVE'} (Score: ${cand.score.toFixed(1)})`;
+    
+    if (delayEl) {
+        delayEl.textContent = `${cand.delayDeltaPct > 0 ? '+' : ''}${cand.delayDeltaPct}%`;
+        delayEl.className = `impact-val ${cand.delayDeltaPct < 0 ? 'green-text' : 'danger-text'}`;
+    }
+    if (queueEl) {
+        queueEl.textContent = `${cand.queueDeltaPct > 0 ? '+' : ''}${cand.queueDeltaPct}%`;
+        queueEl.className = `impact-val ${cand.queueDeltaPct < 0 ? 'green-text' : 'danger-text'}`;
+    }
+    if (spillEl) {
+        spillEl.textContent = cand.spillback.split(' ')[0];
+        spillEl.className = `impact-val ${cand.spillback.includes('LOW') ? 'green-text' : 'amber-text'}`;
+    }
+    if (safetyEl) {
+        safetyEl.textContent = cand.emergencySafety.split(' ')[0];
+        safetyEl.className = `impact-val ${cand.emergencySafety.includes('SAFE') ? 'green-text' : 'danger-text'}`;
+    }
+
+    if (expText) expText.textContent = cand.explanation;
+    if (confBadge) {
+        if (cand.isRecommended) {
+            confBadge.textContent = "HIGH CONFIDENCE (89%)";
+            confBadge.className = "rec-confidence-badge";
+        } else {
+            confBadge.textContent = `EXPLORING ALTERNATIVE (Rank #${cand.rank})`;
+            confBadge.className = "rec-confidence-badge amber-text";
+        }
+    }
+}
+
 // ==============================================================================
-// 3. CANVAS TOPOLOGY, DOMINO PATHS & OVERLAYS
+// 3. HUMAN OPERATOR DECISION ACTIONS (Approve / Reject / Try Another)
+// ==============================================================================
+
+async function approveStrategy() {
+    const activeCand = appState.candidates.find(c => c.id === appState.selectedCandidateId) || appState.candidates[0];
+    appState.decisionState = DECISION_STATES.APPLIED;
+    appState.appliedStrategy = activeCand.type;
+
+    // Apply Post-Intervention Traffic Result
+    appState.traffic.junctions.J2.queueMeters = Math.max(12, appState.traffic.junctions.J2.queueMeters * 0.55);
+    appState.traffic.junctions.J2.speedKmh = 36.0;
+    appState.traffic.junctions.J2.anomalyScore = 0.15;
+    appState.traffic.junctions.J2.status = "normal";
+    appState.traffic.junctions.J2.isGreen = true;
+    appState.predictions.J2.congestionProbability = 0.22;
+    appState.interventionWindow.minutesRemaining = 8;
+    appState.domino.paths[0].probability = 0.18;
+
+    const msgEl = document.getElementById("decisionStatusMsg");
+    if (msgEl) {
+        msgEl.innerHTML = `✅ <strong class="green-text">STRATEGY APPLIED:</strong> ${activeCand.name} active on corridor. Traffic normalizing.`;
+    }
+
+    // Add to Audit Trail
+    const nowStr = new Date().toLocaleTimeString();
+    appState.events.unshift({
+        id: Date.now(),
+        text: `Operator APPROVED & APPLIED ${activeCand.name}. J2 queue cleared to ${appState.traffic.junctions.J2.queueMeters.toFixed(1)}m.`,
+        severity: "success",
+        time: nowStr
+    });
+
+    updateUI();
+}
+
+function rejectStrategy() {
+    appState.decisionState = DECISION_STATES.REJECTED;
+    appState.appliedStrategy = null;
+
+    const msgEl = document.getElementById("decisionStatusMsg");
+    if (msgEl) {
+        msgEl.innerHTML = `⚠️ <strong class="danger-text">RECOMMENDATION REJECTED:</strong> No action taken. Traffic monitoring continues.`;
+    }
+
+    const nowStr = new Date().toLocaleTimeString();
+    appState.events.unshift({
+        id: Date.now(),
+        text: `Operator REJECTED intervention. Baseline traffic progression resumed.`,
+        severity: "warning",
+        time: nowStr
+    });
+
+    updateUI();
+}
+
+function tryAnotherCandidate() {
+    // Cycle to next candidate
+    const currentIndex = appState.candidates.findIndex(c => c.id === appState.selectedCandidateId);
+    const nextIndex = (currentIndex + 1) % appState.candidates.length;
+    appState.selectedCandidateId = appState.candidates[nextIndex].id;
+
+    const msgEl = document.getElementById("decisionStatusMsg");
+    if (msgEl) {
+        msgEl.textContent = `Inspecting alternative #${appState.candidates[nextIndex].rank}: ${appState.candidates[nextIndex].name}`;
+    }
+
+    updateUI();
+}
+
+// ==============================================================================
+// 4. CANVAS TOPOLOGY, FLOW ANIMATION & OVERLAYS
 // ==============================================================================
 
 function renderCanvas() {
@@ -380,7 +591,7 @@ function renderCanvas() {
         ctx.strokeRect(x - 20, 30, 40, h - 60);
     });
 
-    // 3. Draw Flow Vehicles (if traffic layer active)
+    // 3. Draw Flow Vehicles
     if (appState.layers.traffic) {
         const t = Date.now() / 350.0;
         ctx.fillStyle = "#22C7D6";
@@ -390,10 +601,9 @@ function renderCanvas() {
         }
     }
 
-    // 4. Draw Domino Cascade Arrow Overlay (if spillover layer active)
-    if (appState.layers.spillover) {
+    // 4. Draw Domino Cascade Arrow Overlay
+    if (appState.layers.spillover && appState.decisionState !== DECISION_STATES.APPLIED) {
         const timeOffset = (Date.now() / 40) % 30;
-        // J2 -> J1 (Upstream Spillover Arrow)
         ctx.strokeStyle = "rgba(239, 68, 68, 0.8)";
         ctx.lineWidth = 3;
         ctx.setLineDash([8, 8]);
@@ -403,12 +613,10 @@ function renderCanvas() {
         ctx.lineTo(jx.J1 + 40, centerY - 14);
         ctx.stroke();
 
-        // Label Spillover Rate
         ctx.fillStyle = "#EF4444";
         ctx.font = "bold 10px Inter, sans-serif";
         ctx.fillText("▲ 73% Spillover", (jx.J1 + jx.J2) / 2, centerY - 20);
 
-        // J2 -> J3 (Downstream Drag Arrow)
         ctx.strokeStyle = "rgba(255, 176, 32, 0.7)";
         ctx.lineDashOffset = -timeOffset;
         ctx.beginPath();
@@ -426,15 +634,13 @@ function renderCanvas() {
         const isSelected = (appState.selectedJunction === name);
         const jData = appState.traffic.junctions[name];
 
-        // Anomaly Pulse Box (if anomaly layer active)
-        if (appState.layers.anomaly && jData.anomalyScore >= 0.8) {
+        if (appState.layers.anomaly && jData.anomalyScore >= 0.8 && appState.decisionState !== DECISION_STATES.APPLIED) {
             const pulse = (Math.sin(Date.now() / 250) + 1) * 3;
             ctx.strokeStyle = `rgba(239, 68, 68, ${0.4 + pulse / 10})`;
             ctx.lineWidth = 3 + pulse;
             ctx.strokeRect(x - 42 - pulse, y - 42 - pulse, 84 + pulse * 2, 84 + pulse * 2);
         }
 
-        // Selection Aura
         if (isSelected) {
             ctx.strokeStyle = "rgba(34, 199, 214, 0.9)";
             ctx.lineWidth = 2.5;
@@ -443,14 +649,12 @@ function renderCanvas() {
             ctx.setLineDash([]);
         }
 
-        // Signal Box
         ctx.fillStyle = "#0A1726";
         ctx.strokeStyle = isSelected ? "var(--cyan)" : "#223B59";
         ctx.lineWidth = 2;
         ctx.fillRect(x - 14, y - 26, 28, 52);
         ctx.strokeRect(x - 14, y - 26, 28, 52);
 
-        // Signal Bulbs
         const isGreen = jData.isGreen;
         ctx.fillStyle = isGreen ? "#39E75F" : "#1A2E44";
         ctx.beginPath();
@@ -462,13 +666,11 @@ function renderCanvas() {
         ctx.arc(x, y + 12, 7, 0, Math.PI * 2);
         ctx.fill();
 
-        // Node Title
         ctx.fillStyle = isSelected ? "#22C7D6" : "#F4F8FC";
         ctx.font = "bold 12px Inter, sans-serif";
         ctx.textAlign = "center";
         ctx.fillText(name, x, y - 44);
 
-        // Queue Indicator Bar
         const barWidth = Math.min(70, jData.queueMeters * 1.0);
         ctx.fillStyle = "rgba(255, 176, 32, 0.2)";
         ctx.fillRect(x - 35, y + 36, 70, 7);
@@ -484,7 +686,7 @@ function renderCanvas() {
 }
 
 // ==============================================================================
-// 4. INTERACTION & EVENT LISTENERS
+// 5. EVENT LISTENERS & BOOTSTRAP
 // ==============================================================================
 
 function selectJunction(jId) {
@@ -499,7 +701,7 @@ function selectJunction(jId) {
     if (card) card.addEventListener("click", () => selectJunction(jId));
 });
 
-// Bind Canvas Clicks to select nodes directly
+// Bind Canvas Clicks
 if (canvas) {
     canvas.addEventListener("click", e => {
         const rect = canvas.getBoundingClientRect();
@@ -522,6 +724,14 @@ if (canvas) {
     }
 });
 
+// Bind Human Decision Buttons
+document.getElementById("btnApproveStrategy")?.addEventListener("click", approveStrategy);
+document.getElementById("btnRejectStrategy")?.addEventListener("click", rejectStrategy);
+document.getElementById("btnTryAnother")?.addEventListener("click", tryAnotherCandidate);
+document.getElementById("btnReevaluate")?.addEventListener("click", () => {
+    tryAnotherCandidate();
+});
+
 // Demo Toggle Button
 const btnDemo = document.getElementById("btnToggleDemo");
 if (btnDemo) {
@@ -534,7 +744,6 @@ if (btnDemo) {
             appState.traffic.junctions.J2.speedKmh = 11.0;
             appState.traffic.junctions.J2.anomalyScore = 0.96;
             appState.predictions.J2.congestionProbability = 0.94;
-            appState.predictions.J2.predictedQueueGrowth = "+48.0 m";
             appState.interventionWindow.minutesRemaining = 4;
             appState.domino.paths[0].probability = 0.88;
         } else {
@@ -542,7 +751,6 @@ if (btnDemo) {
             appState.traffic.junctions.J2.speedKmh = 18.0;
             appState.traffic.junctions.J2.anomalyScore = 0.91;
             appState.predictions.J2.congestionProbability = 0.87;
-            appState.predictions.J2.predictedQueueGrowth = "+34.0 m";
             appState.interventionWindow.minutesRemaining = 6;
             appState.domino.paths[0].probability = 0.73;
         }
@@ -550,17 +758,12 @@ if (btnDemo) {
     });
 }
 
-// ==============================================================================
-// 5. BOOTSTRAP & POLLING LOOPS
-// ==============================================================================
-
 function init() {
     fetchHealthCheck();
     fetchTrafficIntelligence();
     updateUI();
     renderCanvas();
 
-    // Polling Intervals
     setInterval(fetchHealthCheck, 5000);
     setInterval(fetchTrafficIntelligence, 3000);
     setInterval(updateUI, 1000);
