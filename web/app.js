@@ -374,12 +374,33 @@ function triggerEvent(ev) {
 // Telemetry & Canvas Logic (kept similar to original)
 async function fetchStateData() {
     try {
-        const res = await fetch(`${API_BASE}/state`);
-        if (res.ok) {
-            liveData = await res.json();
-            updateTelemetryUI(liveData);
+        const targetJunction = document.getElementById('actionTargetJunction').value || 'J2';
+        // Post current evaluation parameters to get live multi-agent decision loop response
+        const evalRes = await fetch(`${API_BASE}/evaluate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                horizon_seconds: 180,
+                junction_id: targetJunction,
+                strategy_type: currentStrategy || 'diversion'
+            })
+        });
+
+        if (evalRes.ok) {
+            const agentData = await evalRes.json();
+            updateMultiAgentUI(agentData);
+            
+            // Re-render telemetry cards
+            if (agentData.situation) {
+                const sit = agentData.situation;
+                document.getElementById("metricDelay").textContent = sit.avg_waiting_time_s.toFixed(2) + "s";
+                document.getElementById("metricQueue").textContent = sit.queue_length_m.toFixed(1) + "m";
+                document.getElementById("metricSpeed").textContent = sit.avg_speed_kmh.toFixed(1) + "km/h";
+                document.getElementById("metricVehicles").textContent = sit.active_vehicles;
+            }
         }
     } catch (err) {
+        // Fallback mockup
         const elapsed = Date.now() / 1000;
         liveData = {
             network_metrics: { active_vehicles: 124 + Math.floor(Math.sin(elapsed)*10), avg_waiting_time_s: (0.24 + Math.sin(elapsed)*0.05).toFixed(2), avg_speed_kmh: 39.6, mean_queue_length_m: 30.0 },
@@ -390,6 +411,79 @@ async function fetchStateData() {
             }
         };
         updateTelemetryUI(liveData);
+    }
+}
+
+function updateMultiAgentUI(data) {
+    if (!data) return;
+
+    // 1. Forecast & Congestion alerts
+    if (data.prediction) {
+        const pred = data.prediction;
+        const probPct = Math.round(pred.congestion_probability * 100);
+        document.getElementById('forecastProb').textContent = probPct + "%";
+        document.getElementById('forecastQueue').textContent = pred.predicted_queue_5min_m.toFixed(1) + "m";
+        const trendEl = document.getElementById('forecastTrend');
+        if (pred.will_congest_5min) {
+            trendEl.textContent = "▲ CRITICAL";
+            trendEl.style.color = "var(--rose)";
+        } else {
+            trendEl.textContent = "▼ STABLE";
+            trendEl.style.color = "var(--emerald)";
+        }
+    }
+
+    // 2. Anomaly Fingerprint Match
+    if (data.fingerprint) {
+        const fp = data.fingerprint;
+        document.getElementById('trafficFingerprintBadge').textContent = `Fingerprint: ${fp.pattern_type}`;
+        document.getElementById('fingerprintSimilarity').textContent = `Pattern match: ${Math.round(fp.dataset_similarity_score * 100)}%`;
+        
+        // Populate factors list
+        const factorsContainer = document.getElementById('fingerprintFactors');
+        factorsContainer.innerHTML = '';
+        Object.entries(fp.factors).forEach(([key, val]) => {
+            const row = document.createElement('div');
+            row.style.display = 'flex';
+            row.style.justifyContent = 'space-between';
+            row.style.fontSize = '12px';
+            row.innerHTML = `<span style="color: var(--text-muted); text-transform: capitalize;">${key.replace('_', ' ')}</span><span style="font-weight: bold; color: var(--text-main);">${Math.round(val * 100)}%</span>`;
+            factorsContainer.appendChild(row);
+        });
+    }
+
+    // 3. AI Copilot Advice
+    if (data.recommendation) {
+        const rec = data.recommendation;
+        document.getElementById('copilotRecommends').textContent = `RECOMMENDED: ${rec.strategy.replace('_', ' ').toUpperCase()}`;
+        document.getElementById('copilotExplanation').textContent = rec.explanation;
+        document.getElementById('copilotConfidence').textContent = `Confidence: ${Math.round(rec.confidence * 100)}%`;
+    }
+
+    // 4. Digital Twin Simulator Matrix Rows
+    if (data.candidates) {
+        const tbody = document.getElementById('dtSimulatorBody');
+        tbody.innerHTML = '';
+        data.candidates.forEach(c => {
+            const tr = document.createElement('tr');
+            tr.style.borderBottom = '1px solid var(--border-color)';
+            tr.style.backgroundColor = c.is_best ? 'rgba(59, 130, 246, 0.1)' : 'transparent';
+            
+            // Colour coding deltas
+            const delayColor = c.delay_change_pct <= 0 ? 'var(--emerald)' : 'var(--rose)';
+            const queueColor = c.queue_change_pct <= 0 ? 'var(--emerald)' : 'var(--rose)';
+            const emColor = c.emissions_change_pct <= 0 ? 'var(--emerald)' : 'var(--rose)';
+
+            tr.innerHTML = `
+                <td style="padding: 10px; font-weight: bold; color: var(--text-main);">${c.strategy_type.replace('_', ' ').toUpperCase()} ${c.is_best ? '★' : ''}</td>
+                <td style="padding: 10px; color: ${delayColor};">${c.delay_change_pct > 0 ? '+' : ''}${c.delay_change_pct.toFixed(1)}%</td>
+                <td style="padding: 10px; color: ${queueColor};">${c.queue_change_pct > 0 ? '+' : ''}${c.queue_change_pct.toFixed(1)}%</td>
+                <td style="padding: 10px; color: var(--text-main);">${c.emergency_eta_change_sec.toFixed(1)}s</td>
+                <td style="padding: 10px; color: ${emColor};">${c.emissions_change_pct > 0 ? '+' : ''}${c.emissions_change_pct.toFixed(1)}%</td>
+                <td style="padding: 10px; font-weight: bold; color: var(--cyan);">${c.score.toFixed(3)}</td>
+            `;
+            tbody.appendChild(tr);
+        });
     }
 }
 
@@ -459,14 +553,14 @@ function renderCanvas() {
 
     // Queue Bars
     function drawQueueBar(x, y, lengthM) {
-        const barW = Math.min(80, lengthM * 1.5);
+        const barW = Math.min(80, (lengthM || 0.0) * 1.5);
         ctx.fillStyle = "rgba(245, 158, 11, 0.2)"; ctx.fillRect(x - 40, y + 36, 80, 8);
         ctx.fillStyle = "#f59e0b"; ctx.fillRect(x - 40, y + 36, barW || 0, 8);
     }
 
-    drawQueueBar(jx.J1, centerY, liveData?.junctions?.J1?.total_queue_m);
-    drawQueueBar(jx.J2, centerY, liveData?.junctions?.J2?.total_queue_m);
-    drawQueueBar(jx.J3, centerY, liveData?.junctions?.J3?.total_queue_m);
+    drawQueueBar(jx.J1, centerY, liveData?.junctions?.J1?.total_queue_m || 20.0);
+    drawQueueBar(jx.J2, centerY, liveData?.junctions?.J2?.total_queue_m || 30.0);
+    drawQueueBar(jx.J3, centerY, liveData?.junctions?.J3?.total_queue_m || 15.0);
 
     // Vehicles
     const t = Date.now() / 300.0;

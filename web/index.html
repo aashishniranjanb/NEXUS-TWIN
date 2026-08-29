@@ -110,86 +110,160 @@
             </div>
 
             <!-- Main Dashboard Grid -->
-            <main class="dashboard-grid" style="margin-top: 15px;">
-                <!-- Left: Canvas -->
-                <section class="panel twin-panel">
-                    <div class="panel-header">
-                        <h2>Live Network Twin (J1 - J2 - J3)</h2>
-                    </div>
-                    <div class="canvas-container">
-                        <canvas id="networkCanvas" width="760" height="380"></canvas>
-                        <div class="canvas-overlay-legend" id="canvasLegend">
-                            <div><span class="dot green"></span> Green</div>
-                            <div><span class="dot red"></span> Red</div>
+            <main class="dashboard-grid" style="margin-top: 15px; display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px;">
+                <!-- Left Column: Map & Intelligence Display -->
+                <div style="display: flex; flex-direction: column; gap: 20px;">
+                    <!-- Twin Panel -->
+                    <section class="panel twin-panel">
+                        <div class="panel-header">
+                            <h2>Live Network Twin (J1 - J2 - J3)</h2>
+                            <div class="hud-mode-badge" style="background: rgba(59,130,246,0.15); color: var(--cyan); padding: 4px 10px; border-radius: 4px; font-weight: bold;" id="trafficFingerprintBadge">Fingerprint: Loading...</div>
                         </div>
-                        <div class="canvas-score-overlay" id="canvasScoreOverlay" style="position: absolute; top: 10px; right: 10px; font-size: 24px; font-weight: bold; color: rgba(255,255,255,0.5); text-shadow: 0 0 5px black;"></div>
-                    </div>
-                </section>
+                        <div class="canvas-container">
+                            <canvas id="networkCanvas" width="760" height="380"></canvas>
+                            <div class="canvas-overlay-legend" id="canvasLegend">
+                                <div><span class="dot green"></span> Green</div>
+                                <div><span class="dot red"></span> Red</div>
+                                <div><span class="dot amber" style="background: var(--amber);"></span> Congested</div>
+                            </div>
+                        </div>
+                    </section>
 
-                <!-- Right: Action Console -->
-                <section class="panel action-panel">
-                    <div class="panel-header">
-                        <h2>Commander Action Console</h2>
-                        <select id="actionTargetJunction" class="input-control" style="width: 120px;">
-                            <option value="J1">Target: J1</option>
-                            <option value="J2" selected>Target: J2</option>
-                            <option value="J3">Target: J3</option>
-                        </select>
-                    </div>
-                    
-                    <div class="action-buttons-stack" id="actionStack">
-                        <div class="action-btn-group">
-                            <button class="action-btn strategy-btn" data-strategy="green_extend" style="border-left-color: var(--emerald);">
-                                <span class="strategy-icon">🟢</span> Extend Green Phase
-                            </button>
-                            <div class="strategy-options hidden" id="opt_green_extend">
-                                <label style="font-size: 12px; color: var(--text-muted);">Duration: <span id="val_green_extend">20s</span></label>
-                                <input type="range" id="param_green_extend" min="10" max="60" value="20" class="slider-control" style="width: 100%;">
+                    <!-- Multi-Agent Forecasting & Fingerprint panel -->
+                    <section class="panel">
+                        <div class="panel-header">
+                            <h2>Multi-Agent Congestion Fingerprint & Forecast</h2>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 20px;">
+                            <div>
+                                <h3 style="font-size: 13px; color: var(--text-muted); margin-bottom: 10px;">PROBABILITY DELTA (5 MINS)</h3>
+                                <div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px;">
+                                    <span id="forecastProb" style="font-size: 48px; font-weight: 800; color: var(--rose);">0%</span>
+                                    <span id="forecastTrend" style="font-size: 14px; font-weight: bold; color: var(--rose);">▲ SPILLOVER</span>
+                                </div>
+                                <div class="telemetry-card" style="padding: 10px 15px;">
+                                    <div class="label">PREDICTED QUEUE DELTA</div>
+                                    <div class="value" id="forecastQueue" style="font-size: 20px;">0.0m</div>
+                                </div>
+                            </div>
+                            <div>
+                                <h3 style="font-size: 13px; color: var(--text-muted); margin-bottom: 10px;">GEOTAB DATASET SIMILARY INDEX</h3>
+                                <div id="fingerprintSimilarity" style="font-size: 18px; font-weight: bold; margin-bottom: 10px; color: var(--emerald);">Pattern match: 91%</div>
+                                <div style="display: flex; flex-direction: column; gap: 8px;" id="fingerprintFactors">
+                                    <!-- Populated dynamically by JS -->
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Right Column: Action Console & XAI Copilot -->
+                <div style="display: flex; flex-direction: column; gap: 20px;">
+                    <!-- Action Console -->
+                    <section class="panel action-panel" style="flex: 1;">
+                        <div class="panel-header">
+                            <h2>Commander Action Console</h2>
+                            <select id="actionTargetJunction" class="input-control" style="width: 120px;">
+                                <option value="J1">Target: J1</option>
+                                <option value="J2" selected>Target: J2</option>
+                                <option value="J3">Target: J3</option>
+                            </select>
+                        </div>
+                        
+                        <div class="action-buttons-stack" id="actionStack">
+                            <div class="action-btn-group">
+                                <button class="action-btn strategy-btn" data-strategy="green_extend" style="border-left-color: var(--emerald);">
+                                    <span class="strategy-icon">🟢</span> Extend Green Phase
+                                </button>
+                                <div class="strategy-options hidden" id="opt_green_extend">
+                                    <label style="font-size: 12px; color: var(--text-muted);">Duration: <span id="val_green_extend">20s</span></label>
+                                    <input type="range" id="param_green_extend" min="10" max="60" value="20" class="slider-control" style="width: 100%;">
+                                </div>
+                            </div>
+                            
+                            <div class="action-btn-group">
+                                <button class="action-btn strategy-btn" data-strategy="diversion" style="border-left-color: var(--primary);">
+                                    <span class="strategy-icon">↪️</span> Divert Traffic
+                                </button>
+                                <div class="strategy-options hidden" id="opt_diversion">
+                                    <label style="font-size: 12px; color: var(--text-muted);">Diversion Rate: <span id="val_diversion">30%</span></label>
+                                    <input type="range" id="param_diversion" min="10" max="50" value="30" class="slider-control" style="width: 100%;">
+                                </div>
+                            </div>
+                            
+                            <div class="action-btn-group">
+                                <button class="action-btn strategy-btn" data-strategy="dynamic_lane" style="border-left-color: var(--cyan);">
+                                    <span class="strategy-icon">🛣️</span> Open Dynamic Lane
+                                </button>
+                                <div class="strategy-options hidden" id="opt_dynamic_lane">
+                                    <select id="param_dynamic_lane" class="input-control" style="width: 100%;">
+                                        <option value="J1">At J1</option>
+                                        <option value="J2">At J2</option>
+                                        <option value="J3">At J3</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="action-btn-group">
+                                <button class="action-btn strategy-btn" data-strategy="emergency_priority" style="border-left-color: var(--rose);">
+                                    <span class="strategy-icon">🚨</span> Emergency Override
+                                </button>
+                            </div>
+                            
+                            <div class="action-btn-group">
+                                <button class="action-btn strategy-btn" data-strategy="do_nothing" style="border-left-color: var(--text-muted);">
+                                    <span class="strategy-icon">⏸️</span> Do Nothing (Baseline)
+                                </button>
                             </div>
                         </div>
                         
-                        <div class="action-btn-group">
-                            <button class="action-btn strategy-btn" data-strategy="diversion" style="border-left-color: var(--primary);">
-                                <span class="strategy-icon">↪️</span> Divert Traffic
-                            </button>
-                            <div class="strategy-options hidden" id="opt_diversion">
-                                <label style="font-size: 12px; color: var(--text-muted);">Diversion Rate: <span id="val_diversion">30%</span></label>
-                                <input type="range" id="param_diversion" min="10" max="50" value="30" class="slider-control" style="width: 100%;">
+                        <button class="btn btn-primary btn-block commit-btn" id="btnCommitMove" disabled style="margin-top: 15px; height: 50px; font-size: 16px;">COMMIT MOVE</button>
+                    </section>
+
+                    <!-- Explainable AI Copilot Card -->
+                    <section class="panel" style="background: rgba(18, 26, 44, 0.9);">
+                        <div class="panel-header">
+                            <h2>AI Decision Copilot</h2>
+                            <div style="font-size: 12px; color: var(--emerald); font-weight: bold; background: rgba(16,185,129,0.15); padding: 2px 6px; border-radius: 4px;" id="copilotConfidence">Confidence: 91%</div>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <div id="copilotRecommends" style="font-weight: bold; font-size: 15px; color: var(--cyan);">RECOMMENDED INTERVENTION: DIVERSION</div>
+                            <p id="copilotExplanation" style="color: var(--text-muted); font-size: 13px;">Analyzing network flow telemetry against trained models...</p>
+                            <div id="xaiTopFactors" style="border-top: 1px solid var(--border-color); padding-top: 10px; margin-top: 5px;">
+                                <h4 style="font-size: 12px; color: var(--text-dim); margin-bottom: 8px;">TOP EXPLAINABILITY INFLUENCE FACTORS</h4>
+                                <!-- Dynamic factors -->
                             </div>
                         </div>
-                        
-                        <div class="action-btn-group">
-                            <button class="action-btn strategy-btn" data-strategy="dynamic_lane" style="border-left-color: var(--cyan);">
-                                <span class="strategy-icon">🛣️</span> Open Dynamic Lane
-                            </button>
-                            <div class="strategy-options hidden" id="opt_dynamic_lane">
-                                <select id="param_dynamic_lane" class="input-control" style="width: 100%;">
-                                    <option value="J1">At J1</option>
-                                    <option value="J2">At J2</option>
-                                    <option value="J3">At J3</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <div class="action-btn-group">
-                            <button class="action-btn strategy-btn" data-strategy="emergency_priority" style="border-left-color: var(--rose);">
-                                <span class="strategy-icon">🚨</span> Emergency Override
-                            </button>
-                        </div>
-                        
-                        <div class="action-btn-group">
-                            <button class="action-btn strategy-btn" data-strategy="do_nothing" style="border-left-color: var(--text-muted);">
-                                <span class="strategy-icon">⏸️</span> Do Nothing
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <button class="btn btn-primary btn-block commit-btn" id="btnCommitMove" disabled style="margin-top: auto; height: 50px; font-size: 16px;">COMMIT MOVE</button>
-                </section>
+                    </section>
+                </div>
             </main>
 
-            <!-- Bottom Grid -->
-            <section class="bottom-grid controls-grid" style="margin-top: 15px;">
+            <!-- Digital Twin Evaluation Matrix -->
+            <section class="panel" style="margin-top: 20px;">
+                <div class="panel-header">
+                    <h2>Digital Twin What-If Future Simulator Results (SUMO Simplex Forecast)</h2>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-muted);">
+                                <th style="padding: 10px;">STRATEGY</th>
+                                <th style="padding: 10px;">NET NETWORK DELAY DELTA</th>
+                                <th style="padding: 10px;">QUEUE CLEARANCE DELTA</th>
+                                <th style="padding: 10px;">EMERGENCY ETA DELAY</th>
+                                <th style="padding: 10px;">CARBON EMISSIONS REDUCTION</th>
+                                <th style="padding: 10px;">PREDICTOR SCORE</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dtSimulatorBody">
+                            <!-- Populated Dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Bottom Grid (Telemetry and Badges) -->
+            <section class="bottom-grid controls-grid" style="margin-top: 20px; display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px;">
                 <div class="panel">
                     <div class="panel-header" style="margin-bottom: 10px;"><h2>Live Telemetry</h2></div>
                     <div class="telemetry-ribbon" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">

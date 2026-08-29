@@ -58,3 +58,47 @@ class WebSocketTrafficMessage(BaseModel):
     signals: Optional[List[SignalTelemetry]] = None
     event_type: Optional[str] = None
     junction_id: Optional[str] = None
+
+# --- Unified Multi-Agent Intelligence Schemas ---
+
+class SituationState(BaseModel):
+    junction_id: str
+    active_vehicles: int
+    avg_speed_kmh: float
+    avg_waiting_time_s: float
+    queue_length_m: float
+
+class PredictionOutputModel(BaseModel):
+    will_congest_5min: bool
+    congestion_probability: float
+    predicted_queue_5min_m: float
+    confidence_score: float
+
+class FingerprintState(BaseModel):
+    pattern_type: str
+    dataset_similarity_score: float
+    factors: Dict[str, float]
+
+class RecommendationOutput(BaseModel):
+    strategy: str
+    confidence: float
+    explanation: str
+    action_plan: str
+
+class CandidateFuture(BaseModel):
+    strategy_type: str
+    delay_change_pct: float
+    queue_change_pct: float
+    emergency_eta_change_sec: float
+    emissions_change_pct: float
+    is_best: bool
+    score: float
+
+class MultiAgentDecisionResponse(BaseModel):
+    timestamp: float
+    situation: SituationState
+    prediction: PredictionOutputModel
+    fingerprint: FingerprintState
+    recommendation: RecommendationOutput
+    candidates: List[CandidateFuture]
+

@@ -278,3 +278,17 @@ body {
     from { box-shadow: 0 0 0 rgba(239, 68, 68, 0); }
     to { box-shadow: 0 0 20px rgba(239, 68, 68, 0.8); }
 }
+
+/* Digital Twin simulator comparison styles */
+#dtSimulatorBody tr:hover {
+    background-color: rgba(255, 255, 255, 0.03) !important;
+}
+#dtSimulatorBody td {
+    padding: 12px 10px;
+    font-family: monospace;
+}
+#fingerprintFactors div {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    padding-bottom: 4px;
+}
+

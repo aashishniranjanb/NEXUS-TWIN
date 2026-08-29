@@ -36,6 +36,9 @@ from intelligence.strategy.strategy_optimizer import StrategyOptimizer
 from intelligence.explainability.explainable_ai import ExplainableAIEngine
 from intelligence.prediction.congestion_predictor import CongestionPredictor
 from backend.game_server.game_engine import GameEngine
+from backend.agents.orchestrator import MultiAgentOrchestrator
+from backend.schemas.api_schemas import MultiAgentDecisionResponse
+
 
 app = FastAPI(
     title="NEXUS-TWIN Backend API",
@@ -64,6 +67,7 @@ class BackendManager:
         self.xai_engine = ExplainableAIEngine()
         self.predictor = CongestionPredictor()
         self.game_engine = GameEngine()
+        self.orchestrator = MultiAgentOrchestrator()
         self.active_incident: Optional[Dict[str, Any]] = None
         self.active_override: Optional[Dict[str, Any]] = None
         self.history: List[Dict[str, Any]] = []
@@ -235,16 +239,12 @@ class BackendManager:
         best_strategy, best_score = self.optimizer.select_best_strategy(candidates)
         explanation = self.xai_engine.explain(best_strategy, candidates)
 
-        response = {
-            "timestamp": time.time(),
-            "horizon_seconds": horizon,
-            "recommended_strategy": best_strategy.to_dict(),
-            "recommended_score": round(best_score, 3),
-            "explanation": explanation.to_dict(),
-            "candidates": [c.to_dict() for c in candidates]
-        }
-        self.history.append(response)
-        return response
+        best_strategy, best_score = self.optimizer.select_best_strategy(candidates)
+        
+        # Invoke Multi-Agent Reasoning Chain
+        multi_agent_res = self.orchestrator.process_decision_loop(state, candidates)
+        self.history.append(multi_agent_res)
+        return multi_agent_res
 
 manager = BackendManager()
 
