@@ -290,3 +290,85 @@ Returns live subsystem availability.
   "timestamp": "2026-08-29T09:14:35Z"
 }
 ```
+
+---
+
+## 5. AI Dynamic Route & Spillover Optimizer
+
+### `POST /api/v1/routing/optimize`
+Finds optimal routes and dynamic alternatives using travel times, congestion rates, shockwave spillover risk, and emergency corridor clearance flags.
+
+#### Request Payload
+```json
+{
+  "origin": 889,
+  "destination": 463,
+  "mode": "emergency",
+  "city": "Philadelphia",
+  "hour": 17,
+  "weekend": 0
+}
+```
+
+#### Response Payload (`200 OK`)
+```json
+{
+  "origin": 889,
+  "destination": 463,
+  "mode": "emergency",
+  "recommended_route": {
+    "nodes": [889, 1422, 463],
+    "edges": [
+      {
+        "source": 889,
+        "target": 1422,
+        "street": "Market St",
+        "distance_m": 350.0,
+        "congestion_ratio": 1.15
+      },
+      {
+        "source": 1422,
+        "target": 463,
+        "street": "15th St",
+        "distance_m": 410.0,
+        "congestion_ratio": 1.05
+      }
+    ],
+    "predicted_eta_s": 62.4,
+    "congestion_risk": 0.1,
+    "spillover_risk": 0.03
+  },
+  "alternatives": [
+    {
+      "nodes": [889, 902, 463],
+      "edges": [...],
+      "predicted_eta_s": 84.1,
+      "congestion_risk": 0.45,
+      "spillover_risk": 0.15
+    }
+  ],
+  "comparison": {
+    "baseline_eta_s": 92.6,
+    "optimized_eta_s": 62.4,
+    "eta_improvement_pct": 32.6
+  },
+  "reasoning": {
+    "why": "Emergency corridor route preemption active. Avoided bottleneck at Junction #889 via dynamic secondary routing.",
+    "evidence": [
+      "Reduces emergency vehicle ETA by 30.2s (-32.6%).",
+      "Corridor clearance active along path: 889 -> 1422 -> 463."
+    ],
+    "tradeoffs": [
+      "Increases transit speed for ambulance; minor temporary signal pauses on cross-streets."
+    ]
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "city": "Philadelphia",
+    "hour": 17,
+    "seed": 42,
+    "timestamp": "2026-08-29T09:47:12Z",
+    "execution_time_ms": 12.5
+  }
+}
+```
