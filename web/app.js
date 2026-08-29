@@ -57,14 +57,13 @@ document.querySelectorAll('.btn-diff').forEach(btn => {
 });
 
 document.getElementById('btnStartGame').addEventListener('click', async () => {
-    gameState.player_name = document.getElementById('playerName').value || 'Player1';
+    gameState.player_name = 'Operator';
     
     let payload = {
         player_name: gameState.player_name,
-        mode: gameState.mode,
-        difficulty: gameState.difficulty
+        mode: 'free_play',
+        difficulty: 'normal'
     };
-    if (gameState.mode === 'challenge') payload.challenge_id = document.getElementById('challengeSelector').value;
     
     try {
         const res = await fetch(`${API_BASE}/game/start`, {
@@ -92,8 +91,8 @@ document.getElementById('btnStartGame').addEventListener('click', async () => {
     // UI Update
     views.menu.classList.add('hidden');
     views.dashboard.classList.remove('hidden');
-    document.getElementById('hudPlayerName').textContent = gameState.player_name;
-    document.getElementById('hudModeBadge').textContent = gameState.mode.replace('_', ' ').toUpperCase();
+    document.getElementById('hudPlayerName').textContent = "TRAFFIC OPERATIONS CONTROL";
+    document.getElementById('hudModeBadge').textContent = "AI CRISIS MODEL ACTIVE";
     
     currentState = STATES.PLAYING;
     startLoops();

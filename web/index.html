@@ -13,54 +13,63 @@
 <body>
     <div class="app-container">
         
-        <!-- VIEW 1: GAME MENU -->
-        <div class="game-menu" id="gameMenu">
-            <header class="menu-header">
-                <div class="logo-icon menu-logo">⚡</div>
-                <h1>NEXUS-TWIN: Traffic Commander</h1>
-                <p class="sub-title" style="font-size: 16px; margin-top: 10px;">Take control of the 3-junction corridor. Manage congestion. Beat the AI.</p>
-            </header>
-            
-            <div class="menu-content" style="margin-top: 40px; width: 100%; max-width: 800px; display: flex; flex-direction: column; gap: 30px;">
-                <div class="form-group">
-                    <label style="text-align: left;">Commander Name</label>
-                    <input type="text" id="playerName" class="input-control" placeholder="Enter your name" value="Player1">
-                </div>
-                
-                <div class="modes-grid" id="modesGrid">
-                    <div class="mode-card selected" data-mode="free_play">
-                        <div class="mode-icon" style="font-size: 32px;">🎯</div>
-                        <h3>Free Play</h3>
-                        <p style="font-size: 12px; color: var(--text-muted); margin-top: 10px;">Continuous corridor management. Events spawn dynamically. Score accumulates.</p>
-                    </div>
-                    <div class="mode-card" data-mode="challenge">
-                        <div class="mode-icon" style="font-size: 32px;">🏆</div>
-                        <h3>Challenge Mode</h3>
-                        <p style="font-size: 12px; color: var(--text-muted); margin-top: 10px;">Pre-defined congestion scenarios with pass/fail grading.</p>
-                        <select id="challengeSelector" class="input-control hidden" style="margin-top: 10px; width: 100%;">
-                            <option value="rush_hour">Rush Hour Surge</option>
-                            <option value="emergency">Emergency Dispatch</option>
-                            <option value="accident">Accident Blockage</option>
-                            <option value="cascade">Cascade Prevention</option>
-                        </select>
-                    </div>
-                    <div class="mode-card" data-mode="ai_duel">
-                        <div class="mode-icon" style="font-size: 32px;">🤖</div>
-                        <h3>AI Duel</h3>
-                        <p style="font-size: 12px; color: var(--text-muted); margin-top: 10px;">Compete head-to-head against the AI optimizer over 5-minute rounds.</p>
+        <!-- VIEW 1: PREMIUM COMMAND CENTER LANDING MENU -->
+        <div class="game-menu" id="gameMenu" style="min-height: 90vh; display: flex; flex-direction: column; justify-content: space-between; padding: 40px 0;">
+            <!-- Landing Top Bar -->
+            <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 20px;">
+                <div class="brand">
+                    <div class="logo-icon">⚡</div>
+                    <div>
+                        <h1 style="font-size: 24px; font-weight: 800; font-family: var(--font-heading); letter-spacing: 1px;">NEXUS-TWIN</h1>
+                        <span class="sub-title" style="color: var(--cyan); font-weight: 700; letter-spacing: 0.5px;">AI URBAN TRAFFIC INTELLIGENCE</span>
                     </div>
                 </div>
-                
-                <div class="form-group" style="align-items: center;">
-                    <label>Difficulty</label>
-                    <div class="difficulty-selector" id="diffSelector">
-                        <button class="btn btn-diff active" data-diff="easy">Easy</button>
-                        <button class="btn btn-diff" data-diff="normal">Normal</button>
-                        <button class="btn btn-diff" data-diff="hard">Hard</button>
+                <div style="display: flex; gap: 20px; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span class="dot green" style="width: 10px; height: 10px; box-shadow: 0 0 10px var(--emerald);"></span>
+                        <span style="font-size: 11px; font-weight: bold; color: var(--emerald);">SYSTEM ONLINE</span>
+                    </div>
+                    <div style="background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); padding: 4px 10px; border-radius: 4px; font-size: 11px;">
+                        DATASET: <span style="color: var(--cyan); font-weight: bold;">GEOTAB CONNECTED</span>
                     </div>
                 </div>
-                
-                <button class="btn btn-primary btn-block commit-btn" id="btnStartGame" style="font-size: 18px; padding: 15px;">START GAME</button>
+            </div>
+
+            <!-- Hero Section -->
+            <div style="max-width: 800px; text-align: center; margin: 40px auto; display: flex; flex-direction: column; gap: 20px;">
+                <span style="color: var(--cyan); font-weight: bold; font-size: 13px; letter-spacing: 2px;">CITY TRAFFIC DECISION INTELLIGENCE</span>
+                <h1 style="font-size: 48px; font-family: var(--font-heading); font-weight: 800; color: white; line-height: 1.1;">Predict the crisis before the city feels it.</h1>
+                <p style="color: var(--text-muted); font-size: 16px; max-width: 650px; margin: 0 auto;">
+                    Detect emerging congestion, forecast network-wide propagation, simulate interventions inside the SUMO Digital Twin, and enable operator override control.
+                </p>
+                <div style="display: flex; gap: 15px; justify-content: center; margin-top: 15px;">
+                    <button class="btn btn-primary" id="btnStartGame" style="font-size: 16px; padding: 15px 30px;">ENTER COMMAND CENTER</button>
+                </div>
+            </div>
+
+            <!-- Intelligence Stats Strip -->
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; width: 100%; max-width: 1000px; margin: 0 auto;">
+                <div class="telemetry-card" style="text-align: center; background: rgba(16, 29, 46, 0.4);">
+                    <div class="value" style="color: var(--cyan); font-size: 32px;">5 MIN</div>
+                    <div class="label">FORECAST HORIZON</div>
+                </div>
+                <div class="telemetry-card" style="text-align: center; background: rgba(16, 29, 46, 0.4);">
+                    <div class="value" style="color: var(--rose); font-size: 32px;">87%</div>
+                    <div class="label">CONGESTION RISK</div>
+                </div>
+                <div class="telemetry-card" style="text-align: center; background: rgba(16, 29, 46, 0.4);">
+                    <div class="value" style="color: var(--amber); font-size: 32px;">J2 → J1</div>
+                    <div class="label">SPILLOVER PREDICTED</div>
+                </div>
+                <div class="telemetry-card" style="text-align: center; background: rgba(16, 29, 46, 0.4);">
+                    <div class="value" style="color: var(--emerald); font-size: 32px;">3</div>
+                    <div class="label">STRATEGIES READY</div>
+                </div>
+            </div>
+
+            <!-- Bottom Flow message -->
+            <div style="width: 100%; border-top: 1px solid var(--border-color); padding-top: 20px; text-align: center; font-size: 11px; font-weight: bold; color: var(--text-dim); letter-spacing: 2px;">
+                SENSE &bull; PREDICT &bull; SIMULATE &bull; EXPLAIN &bull; DECIDE
             </div>
         </div>
 
