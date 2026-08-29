@@ -3,355 +3,255 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEXUS-TWIN — Traffic Commander</title>
+    <title>NEXUS-TWIN — Traffic Intelligence Command Center</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="app-container">
         
-        <!-- VIEW 1: PREMIUM COMMAND CENTER LANDING MENU -->
-        <div class="game-menu" id="gameMenu" style="min-height: 90vh; display: flex; flex-direction: column; justify-content: space-between; padding: 40px 0;">
-            <!-- Landing Top Bar -->
-            <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 20px;">
-                <div class="brand">
-                    <div class="logo-icon">⚡</div>
-                    <div>
-                        <h1 style="font-size: 24px; font-weight: 800; font-family: var(--font-heading); letter-spacing: 1px;">NEXUS-TWIN</h1>
-                        <span class="sub-title" style="color: var(--cyan); font-weight: 700; letter-spacing: 0.5px;">AI URBAN TRAFFIC INTELLIGENCE</span>
-                    </div>
-                </div>
-                <div style="display: flex; gap: 20px; align-items: center;">
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <span class="dot green" style="width: 10px; height: 10px; box-shadow: 0 0 10px var(--emerald);"></span>
-                        <span style="font-size: 11px; font-weight: bold; color: var(--emerald);">SYSTEM ONLINE</span>
-                    </div>
-                    <div style="background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); padding: 4px 10px; border-radius: 4px; font-size: 11px;">
-                        DATASET: <span style="color: var(--cyan); font-weight: bold;">GEOTAB CONNECTED</span>
-                    </div>
+        <!-- TOP NAVIGATION & SYSTEM STATUS BAR -->
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <div class="brand-logo">⚡</div>
+                <div>
+                    <h1 class="brand-title">NEXUS-TWIN</h1>
+                    <div class="brand-subtitle">AI URBAN TRAFFIC INTELLIGENCE</div>
                 </div>
             </div>
 
-            <!-- Hero Section -->
-            <div style="max-width: 800px; text-align: center; margin: 40px auto; display: flex; flex-direction: column; gap: 20px;">
-                <span style="color: var(--cyan); font-weight: bold; font-size: 13px; letter-spacing: 2px;">CITY TRAFFIC DECISION INTELLIGENCE</span>
-                <h1 style="font-size: 48px; font-family: var(--font-heading); font-weight: 800; color: white; line-height: 1.1;">Predict the crisis before the city feels it.</h1>
-                <p style="color: var(--text-muted); font-size: 16px; max-width: 650px; margin: 0 auto;">
-                    Detect emerging congestion, forecast network-wide propagation, simulate interventions inside the SUMO Digital Twin, and enable operator override control.
-                </p>
-                <div style="display: flex; gap: 15px; justify-content: center; margin-top: 15px;">
-                    <button class="btn btn-primary" id="btnStartGame" style="font-size: 16px; padding: 15px 30px;">ENTER COMMAND CENTER</button>
+            <div class="top-bar-center">
+                <div class="status-badge" id="backendStatusBadge">
+                    <span class="status-dot green" id="backendStatusDot"></span>
+                    <span id="backendStatusText">SYSTEM ONLINE</span>
+                </div>
+                <div class="meta-pill">
+                    CORRIDOR: <span class="highlight">J1 — J2 — J3</span>
+                </div>
+                <div class="meta-pill">
+                    DATASET: <span class="highlight-cyan">GEOTAB CONNECTED</span>
                 </div>
             </div>
 
-            <!-- Intelligence Stats Strip -->
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; width: 100%; max-width: 1000px; margin: 0 auto;">
-                <div class="telemetry-card" style="text-align: center; background: rgba(16, 29, 46, 0.4);">
-                    <div class="value" style="color: var(--cyan); font-size: 32px;">5 MIN</div>
-                    <div class="label">FORECAST HORIZON</div>
-                </div>
-                <div class="telemetry-card" style="text-align: center; background: rgba(16, 29, 46, 0.4);">
-                    <div class="value" style="color: var(--rose); font-size: 32px;">87%</div>
-                    <div class="label">CONGESTION RISK</div>
-                </div>
-                <div class="telemetry-card" style="text-align: center; background: rgba(16, 29, 46, 0.4);">
-                    <div class="value" style="color: var(--amber); font-size: 32px;">J2 → J1</div>
-                    <div class="label">SPILLOVER PREDICTED</div>
-                </div>
-                <div class="telemetry-card" style="text-align: center; background: rgba(16, 29, 46, 0.4);">
-                    <div class="value" style="color: var(--emerald); font-size: 32px;">3</div>
-                    <div class="label">STRATEGIES READY</div>
-                </div>
+            <div class="top-bar-right">
+                <div class="last-updated" id="lastUpdatedText">Updated: just now</div>
+                <button class="btn btn-secondary btn-sm" id="btnToggleDemo">RUN DEMO SCENARIO</button>
             </div>
+        </header>
 
-            <!-- Bottom Flow message -->
-            <div style="width: 100%; border-top: 1px solid var(--border-color); padding-top: 20px; text-align: center; font-size: 11px; font-weight: bold; color: var(--text-dim); letter-spacing: 2px;">
-                SENSE &bull; PREDICT &bull; SIMULATE &bull; EXPLAIN &bull; DECIDE
+        <!-- GLOBAL NETWORK METRICS RIBBON -->
+        <section class="global-metrics-strip">
+            <div class="metric-box">
+                <span class="metric-label">NETWORK SPEED</span>
+                <span class="metric-val" id="globalSpeed">38.4 km/h</span>
             </div>
-        </div>
+            <div class="metric-box">
+                <span class="metric-label">ACTIVE VEHICLES</span>
+                <span class="metric-val" id="globalVehicles">128</span>
+            </div>
+            <div class="metric-box">
+                <span class="metric-label">MEAN QUEUE</span>
+                <span class="metric-val" id="globalQueue">26.5 m</span>
+            </div>
+            <div class="metric-box">
+                <span class="metric-label">AVG WAITING TIME</span>
+                <span class="metric-val" id="globalDelay">0.28 s</span>
+            </div>
+            <div class="metric-box highlight-box">
+                <span class="metric-label">AT-RISK JUNCTION</span>
+                <span class="metric-val danger-text" id="globalAtRisk">J2 (CRITICAL)</span>
+            </div>
+        </section>
 
-        <!-- VIEW 2: GAME DASHBOARD -->
-        <div class="game-dashboard hidden" id="gameDashboard">
+        <!-- MAIN COMMAND CENTER GRID (8 Col Map : 4 Col AI Rail) -->
+        <main class="main-grid">
             
-            <!-- Game HUD Bar -->
-            <header class="game-hud app-header" style="margin-bottom: 0;">
-                <div class="hud-left brand">
-                    <div class="logo-icon">⚡</div>
-                    <div>
-                        <h1 id="hudPlayerName" style="font-size: 18px; font-weight: 800; font-family: var(--font-heading); letter-spacing: 0.5px;">TRAFFIC COMMAND CENTER</h1>
-                        <span class="sub-title badge mode-badge" id="hudModeBadge" style="background: rgba(33, 199, 232, 0.2); border: 1px solid var(--cyan); padding: 2px 6px; border-radius: 4px; color: var(--cyan); font-weight: bold; font-size: 10px;">J1-J3 CORRIDOR MONITOR</span>
+            <!-- LEFT 8-COLUMN: TRAFFIC NETWORK HERO VISUALIZATION -->
+            <section class="map-column">
+                
+                <div class="panel map-panel">
+                    <div class="panel-header">
+                        <div class="panel-title-wrap">
+                            <h2>J1 — J2 — J3 Urban Traffic Corridor</h2>
+                            <span class="panel-sub">Interactive Topology & Live Queue Propagation</span>
+                        </div>
+                        <div class="map-controls">
+                            <span class="mode-tag" id="liveTag">LIVE TELEMETRY</span>
+                        </div>
                     </div>
-                </div>
-                <div class="hud-center" style="display: flex; align-items: center; gap: 20px;">
-                    <div class="score-container" style="text-align: center; border-right: 1px solid var(--border-color); padding-right: 20px;">
-                        <span style="font-size: 10px; color: var(--text-dim); display: block; font-weight: 800; letter-spacing: 1px;">INTELLIGENCE SCORE</span>
-                        <span class="score-value" id="hudScore" style="font-size: 28px; font-weight: 800; color: var(--emerald); text-shadow: 0 0 10px var(--emerald-glow);">0</span>
-                    </div>
-                    <div class="streak-container hidden" id="hudStreak" style="display: flex; align-items: center; gap: 5px; background: rgba(245,158,11,0.2); padding: 5px 10px; border-radius: 20px; border: 1px solid var(--amber);">
-                        <span class="streak-flame">🔥</span>
-                        <span class="streak-text" id="hudStreakText" style="color: var(--amber); font-weight: bold;">x1.5</span>
-                    </div>
-                    <div style="background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 4px; font-size: 11px;">
-                        DATASET: <span style="color: var(--cyan); font-weight: bold;">GEOTAB CONNECTED</span>
-                    </div>
-                </div>
-                <div class="hud-right header-status">
-                    <div style="text-align: right; margin-right: 15px;">
-                        <span style="font-size: 10px; color: var(--text-dim); display: block; font-weight: 800; letter-spacing: 1px;">SESSION TIME</span>
-                        <span class="session-timer system-time" id="hudTimer" style="font-size: 18px; color: white;">00:00</span>
-                    </div>
-                    <button class="btn btn-danger" id="btnEndGame" style="background: rgba(239, 68, 68, 0.15); border: 1px solid var(--rose); color: var(--rose);">Reset Demo</button>
-                </div>
-            </header>
 
-            <!-- Event Alert Banner & Scenario Controls -->
-            <div style="margin-top: 15px; display: flex; gap: 15px; align-items: stretch;">
-                <div class="panel" style="flex: 1.5; padding: 12px 20px; display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 15px;">
-                    <div style="display: flex; align-items: center; gap: 12px;">
-                        <span style="font-size: 24px;">🎮</span>
-                        <div>
-                            <h3 style="font-size: 13px; font-weight: 800; letter-spacing: 0.5px; color: var(--cyan);">INTERACTIVE SCENARIO CONTROLLER</h3>
-                            <span style="font-size: 11px; color: var(--text-dim);" id="currentStepDesc">Normal traffic operations baseline</span>
-                        </div>
-                    </div>
-                    <div style="display: flex; gap: 8px;">
-                        <button class="btn" id="btnNextStep" style="background: var(--primary); color: white; padding: 8px 16px;">Next Phase &raquo;</button>
-                        <button class="btn" id="btnRunDemo" style="background: rgba(16, 185, 129, 0.2); border: 1px solid var(--emerald); color: var(--emerald); padding: 8px 16px;">Run J2 Incident Demo</button>
-                    </div>
-                </div>
-
-                <div class="event-alert hidden" id="eventAlert" style="flex: 1; padding: 12px 20px; display: flex; flex-direction: row; align-items: center; justify-content: space-between; margin-top: 0; margin-bottom: 0;">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <span class="event-icon" id="eventIcon" style="font-size: 20px;">⚠️</span>
-                        <span class="event-text" id="eventText" style="font-weight: bold; font-size: 13px;">Congestion detected</span>
-                    </div>
-                    <div class="ai-hint" id="aiHint" style="font-size: 11px; color: var(--rose); font-weight: bold; background: rgba(239,68,68,0.1); padding: 4px 8px; border-radius: 4px;">SPILLOVER RISK</div>
-                </div>
-            </div>
-
-            <!-- Main Dashboard Grid -->
-            <main class="dashboard-grid" style="margin-top: 15px; display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px;">
-                <!-- Left Column: Map & Intelligence Display -->
-                <div style="display: flex; flex-direction: column; gap: 20px;">
-                    <!-- Twin Panel -->
-                    <section class="panel twin-panel">
-                        <div class="panel-header">
-                            <h2>Live Network Twin (J1 - J2 - J3)</h2>
-                            <div class="hud-mode-badge" style="background: rgba(59,130,246,0.15); color: var(--cyan); padding: 4px 10px; border-radius: 4px; font-weight: bold;" id="trafficFingerprintBadge">Fingerprint: Loading...</div>
-                        </div>
-                        <div class="canvas-container">
-                            <canvas id="networkCanvas" width="760" height="380"></canvas>
-                            <div class="canvas-overlay-legend" id="canvasLegend">
-                                <div><span class="dot green"></span> Green</div>
-                                <div><span class="dot red"></span> Red</div>
-                                <div><span class="dot amber" style="background: var(--amber);"></span> Congested</div>
-                            </div>
-                        </div>
-                    </section>
-
-                    <!-- Multi-Agent Forecasting & Fingerprint panel -->
-                    <section class="panel">
-                        <div class="panel-header">
-                            <h2>Multi-Agent Congestion Fingerprint & Forecast</h2>
-                        </div>
-                        <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 20px;">
-                            <div>
-                                <h3 style="font-size: 13px; color: var(--text-muted); margin-bottom: 10px;">PROBABILITY DELTA (5 MINS)</h3>
-                                <div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px;">
-                                    <span id="forecastProb" style="font-size: 48px; font-weight: 800; color: var(--rose);">0%</span>
-                                    <span id="forecastTrend" style="font-size: 14px; font-weight: bold; color: var(--rose);">▲ SPILLOVER</span>
-                                </div>
-                                <div class="telemetry-card" style="padding: 10px 15px;">
-                                    <div class="label">PREDICTED QUEUE DELTA</div>
-                                    <div class="value" id="forecastQueue" style="font-size: 20px;">0.0m</div>
-                                </div>
-                            </div>
-                            <div>
-                                <h3 style="font-size: 13px; color: var(--text-muted); margin-bottom: 10px;">GEOTAB DATASET SIMILARY INDEX</h3>
-                                <div id="fingerprintSimilarity" style="font-size: 18px; font-weight: bold; margin-bottom: 10px; color: var(--emerald);">Pattern match: 91%</div>
-                                <div style="display: flex; flex-direction: column; gap: 8px;" id="fingerprintFactors">
-                                    <!-- Populated dynamically by JS -->
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-                </div>
-
-                <!-- Right Column: Action Console & XAI Copilot -->
-                <div style="display: flex; flex-direction: column; gap: 20px;">
-                    <!-- Action Console -->
-                    <section class="panel action-panel" style="flex: 1;">
-                        <div class="panel-header">
-                            <h2>Commander Action Console</h2>
-                            <select id="actionTargetJunction" class="input-control" style="width: 120px;">
-                                <option value="J1">Target: J1</option>
-                                <option value="J2" selected>Target: J2</option>
-                                <option value="J3">Target: J3</option>
-                            </select>
-                        </div>
+                    <!-- Canvas Traffic Network -->
+                    <div class="canvas-container">
+                        <canvas id="networkCanvas" width="800" height="340"></canvas>
                         
-                        <div class="action-buttons-stack" id="actionStack">
-                            <div class="action-btn-group">
-                                <button class="action-btn strategy-btn" data-strategy="green_extend" style="border-left-color: var(--emerald);">
-                                    <span class="strategy-icon">🟢</span> Extend Green Phase
-                                </button>
-                                <div class="strategy-options hidden" id="opt_green_extend">
-                                    <label style="font-size: 12px; color: var(--text-muted);">Duration: <span id="val_green_extend">20s</span></label>
-                                    <input type="range" id="param_green_extend" min="10" max="60" value="20" class="slider-control" style="width: 100%;">
-                                </div>
-                            </div>
-                            
-                            <div class="action-btn-group">
-                                <button class="action-btn strategy-btn" data-strategy="diversion" style="border-left-color: var(--primary);">
-                                    <span class="strategy-icon">↪️</span> Divert Traffic
-                                </button>
-                                <div class="strategy-options hidden" id="opt_diversion">
-                                    <label style="font-size: 12px; color: var(--text-muted);">Diversion Rate: <span id="val_diversion">30%</span></label>
-                                    <input type="range" id="param_diversion" min="10" max="50" value="30" class="slider-control" style="width: 100%;">
-                                </div>
-                            </div>
-                            
-                            <div class="action-btn-group">
-                                <button class="action-btn strategy-btn" data-strategy="dynamic_lane" style="border-left-color: var(--cyan);">
-                                    <span class="strategy-icon">🛣️</span> Open Dynamic Lane
-                                </button>
-                                <div class="strategy-options hidden" id="opt_dynamic_lane">
-                                    <select id="param_dynamic_lane" class="input-control" style="width: 100%;">
-                                        <option value="J1">At J1</option>
-                                        <option value="J2">At J2</option>
-                                        <option value="J3">At J3</option>
-                                    </select>
-                                </div>
-                            </div>
-                            
-                            <div class="action-btn-group">
-                                <button class="action-btn strategy-btn" data-strategy="emergency_priority" style="border-left-color: var(--rose);">
-                                    <span class="strategy-icon">🚨</span> Emergency Override
-                                </button>
-                            </div>
-                            
-                            <div class="action-btn-group">
-                                <button class="action-btn strategy-btn" data-strategy="do_nothing" style="border-left-color: var(--text-muted);">
-                                    <span class="strategy-icon">⏸️</span> Do Nothing (Baseline)
-                                </button>
-                            </div>
+                        <!-- Map Interactive Legend -->
+                        <div class="map-legend">
+                            <div class="legend-item"><span class="dot green"></span> Normal Flow</div>
+                            <div class="legend-item"><span class="dot amber"></span> Warning / Slow</div>
+                            <div class="legend-item"><span class="dot red"></span> Critical Queue</div>
+                            <div class="legend-item"><span class="dot cyan"></span> Selected Node</div>
                         </div>
-                        
-                        <button class="btn btn-primary btn-block commit-btn" id="btnCommitMove" disabled style="margin-top: 15px; height: 50px; font-size: 16px;">COMMIT MOVE</button>
-                    </section>
-
-                    <!-- Explainable AI Copilot Card -->
-                    <section class="panel" style="background: rgba(18, 26, 44, 0.9);">
-                        <div class="panel-header">
-                            <h2>AI Decision Copilot</h2>
-                            <div style="font-size: 12px; color: var(--emerald); font-weight: bold; background: rgba(16,185,129,0.15); padding: 2px 6px; border-radius: 4px;" id="copilotConfidence">Confidence: 91%</div>
-                        </div>
-                        <div style="display: flex; flex-direction: column; gap: 10px;">
-                            <div id="copilotRecommends" style="font-weight: bold; font-size: 15px; color: var(--cyan);">RECOMMENDED INTERVENTION: DIVERSION</div>
-                            <p id="copilotExplanation" style="color: var(--text-muted); font-size: 13px;">Analyzing network flow telemetry against trained models...</p>
-                            <div id="xaiTopFactors" style="border-top: 1px solid var(--border-color); padding-top: 10px; margin-top: 5px;">
-                                <h4 style="font-size: 12px; color: var(--text-dim); margin-bottom: 8px;">TOP EXPLAINABILITY INFLUENCE FACTORS</h4>
-                                <!-- Dynamic factors -->
-                            </div>
-                        </div>
-                    </section>
-                </div>
-            </main>
-
-            <!-- Digital Twin Evaluation Matrix -->
-            <section class="panel" style="margin-top: 20px;">
-                <div class="panel-header">
-                    <h2>Digital Twin What-If Future Simulator Results (SUMO Simplex Forecast)</h2>
-                </div>
-                <div style="overflow-x: auto;">
-                    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
-                        <thead>
-                            <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-muted);">
-                                <th style="padding: 10px;">STRATEGY</th>
-                                <th style="padding: 10px;">NET NETWORK DELAY DELTA</th>
-                                <th style="padding: 10px;">QUEUE CLEARANCE DELTA</th>
-                                <th style="padding: 10px;">EMERGENCY ETA DELAY</th>
-                                <th style="padding: 10px;">CARBON EMISSIONS REDUCTION</th>
-                                <th style="padding: 10px;">PREDICTOR SCORE</th>
-                            </tr>
-                        </thead>
-                        <tbody id="dtSimulatorBody">
-                            <!-- Populated Dynamically -->
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
-            <!-- Traffic Crisis Timeline -->
-            <section class="panel" style="margin-top: 20px;">
-                <div class="panel-header">
-                    <h2>Traffic Crisis Pipeline Timeline</h2>
-                </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; overflow-x: auto; gap: 10px;" id="timelineSteps">
-                    <!-- Steps populated dynamically by JS -->
-                </div>
-            </section>
-
-            <!-- Bottom Grid (Telemetry and Badges) -->
-            <section class="bottom-grid controls-grid" style="margin-top: 20px; display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px;">
-                <div class="panel">
-                    <div class="panel-header" style="margin-bottom: 10px;"><h2>Live Telemetry</h2></div>
-                    <div class="telemetry-ribbon" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                        <div class="telemetry-card" style="padding: 10px;"><div class="label">AVG DELAY</div><div class="value" id="metricDelay" style="font-size: 18px;">0.24s</div></div>
-                        <div class="telemetry-card" style="padding: 10px;"><div class="label">MEAN QUEUE</div><div class="value" id="metricQueue" style="font-size: 18px;">30.0m</div></div>
-                        <div class="telemetry-card" style="padding: 10px;"><div class="label">AVG SPEED</div><div class="value" id="metricSpeed" style="font-size: 18px;">39.6km/h</div></div>
-                        <div class="telemetry-card" style="padding: 10px;"><div class="label">ACTIVE VEHICLES</div><div class="value" id="metricVehicles" style="font-size: 18px;">124</div></div>
                     </div>
                 </div>
+
+                <!-- 3 JUNCTION STATUS CARDS -->
+                <div class="junction-cards-grid">
+                    
+                    <!-- Junction Card J1 -->
+                    <div class="junction-card" id="cardJ1" data-junction="J1">
+                        <div class="card-top">
+                            <span class="j-id">J1 (Westbound Inflow)</span>
+                            <span class="status-pill status-normal" id="statusJ1">NORMAL</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="card-metric">
+                                <span class="lbl">Queue:</span>
+                                <span class="val" id="queueJ1">18.0 m</span>
+                            </div>
+                            <div class="card-metric">
+                                <span class="lbl">Avg Speed:</span>
+                                <span class="val" id="speedJ1">42.0 km/h</span>
+                            </div>
+                            <div class="card-metric">
+                                <span class="lbl">Signal:</span>
+                                <span class="val green-text" id="signalJ1">GREEN</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Junction Card J2 -->
+                    <div class="junction-card selected-card" id="cardJ2" data-junction="J2">
+                        <div class="card-top">
+                            <span class="j-id">J2 (Central Hub)</span>
+                            <span class="status-pill status-critical" id="statusJ2">CRITICAL</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="card-metric">
+                                <span class="lbl">Queue:</span>
+                                <span class="val danger-text" id="queueJ2">61.0 m</span>
+                            </div>
+                            <div class="card-metric">
+                                <span class="lbl">Avg Speed:</span>
+                                <span class="val danger-text" id="speedJ2">18.0 km/h</span>
+                            </div>
+                            <div class="card-metric">
+                                <span class="lbl">Signal:</span>
+                                <span class="val red-text" id="signalJ2">RED</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Junction Card J3 -->
+                    <div class="junction-card" id="cardJ3" data-junction="J3">
+                        <div class="card-top">
+                            <span class="j-id">J3 (Eastbound Exit)</span>
+                            <span class="status-pill status-warning" id="statusJ3">WARNING</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="card-metric">
+                                <span class="lbl">Queue:</span>
+                                <span class="val" id="queueJ3">34.0 m</span>
+                            </div>
+                            <div class="card-metric">
+                                <span class="lbl">Avg Speed:</span>
+                                <span class="val" id="speedJ3">29.0 km/h</span>
+                            </div>
+                            <div class="card-metric">
+                                <span class="lbl">Signal:</span>
+                                <span class="val green-text" id="signalJ3">GREEN</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- RIGHT 4-COLUMN: AI PREDICTION & SYSTEM STATUS RAIL -->
+            <section class="intelligence-column">
                 
-                <div class="badge-gallery panel">
-                    <div class="panel-header" style="margin-bottom: 10px;"><h2>Commander Badges</h2></div>
-                    <div class="badge-grid" id="badgeGrid" style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <!-- Badges populated by JS -->
+                <!-- AI PREDICTION PANEL -->
+                <div class="panel ai-panel">
+                    <div class="panel-header">
+                        <div class="panel-title-wrap">
+                            <h2>AI Congestion Forecast</h2>
+                            <span class="panel-sub" id="predTargetNode">Target: Junction J2</span>
+                        </div>
+                        <span class="ai-badge">XGBoost ML</span>
+                    </div>
+
+                    <div class="pred-highlight-box">
+                        <div class="pred-meta">
+                            <span class="pred-label">CONGESTION PROBABILITY</span>
+                            <span class="pred-horizon">5-MIN HORIZON</span>
+                        </div>
+                        <div class="pred-stat-row">
+                            <span class="pred-percentage danger-text" id="predProbability">87%</span>
+                            <div class="pred-risk-badge bg-danger" id="predRiskBadge">CRITICAL RISK</div>
+                        </div>
+                    </div>
+
+                    <div class="pred-details-list">
+                        <div class="pred-detail-row">
+                            <span class="detail-label">Model Confidence</span>
+                            <span class="detail-val" id="predConfidence">82%</span>
+                        </div>
+                        <div class="pred-detail-row">
+                            <span class="detail-label">Predicted Queue Growth</span>
+                            <span class="detail-val danger-text" id="predQueueDelta">+34.0 m</span>
+                        </div>
+                        <div class="pred-detail-row">
+                            <span class="detail-label">Traffic Fingerprint</span>
+                            <span class="detail-val highlight-cyan" id="predFingerprint">INCIDENT-LIKE (91%)</span>
+                        </div>
+                        <div class="pred-detail-row">
+                            <span class="detail-label">Spillover Cascade Target</span>
+                            <span class="detail-val amber-text" id="predSpillover">J1 (73% in 4 min)</span>
+                        </div>
+                    </div>
+
+                    <div class="responsible-ai-note">
+                        <span class="note-icon">ℹ️</span>
+                        <span>Estimates derived from XGBoost model trained on Geotab historical baseline patterns.</span>
                     </div>
                 </div>
-            </section>
-        </div>
-        
-        <!-- Score Result Popup Modal -->
-        <div class="score-popup hidden" id="scorePopup">
-            <div class="score-popup-content">
-                <h2 id="popupResultTitle" class="popup-title" style="color: white; font-family: var(--font-heading); margin-bottom: 10px;">BEAT THE AI!</h2>
-                <div class="popup-points" id="popupPoints" style="font-size: 64px; font-weight: 800; margin-bottom: 15px;">+350</div>
-                
-                <div class="popup-breakdown" style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; text-align: left; margin-bottom: 20px;">
-                    <div id="popupBasePoints" style="font-weight: bold; color: var(--text-main); margin-bottom: 5px;">Base Points: +280</div>
-                    <ul id="popupMultipliers" style="color: var(--emerald); list-style: none; padding: 0; font-size: 14px;"></ul>
-                    <ul id="popupPenalties" style="color: var(--rose); list-style: none; padding: 0; font-size: 14px; margin-top: 5px;"></ul>
-                </div>
-                
-                <div class="popup-comparison" id="popupComparison" style="font-size: 16px; color: var(--text-muted); margin-bottom: 15px;">
-                    Your Score: 25.71 vs AI Score: 20.00
-                </div>
-                
-                <div class="popup-badges" id="popupNewBadges" style="display: flex; gap: 10px; justify-content: center;"></div>
-            </div>
-        </div>
 
-        <!-- Leaderboard Sidebar -->
-        <div class="leaderboard-sidebar" id="leaderboardSidebar">
-            <button class="toggle-leaderboard" id="btnToggleLeaderboard" style="font-size: 20px;">🏆</button>
-            <div class="leaderboard-content" style="padding: 20px;">
-                <h2 style="margin-bottom: 15px;">Leaderboard</h2>
-                <table class="candidates-table" style="width: 100%;">
-                    <thead><tr><th>Player</th><th>Score</th><th>Mode</th></tr></thead>
-                    <tbody id="leaderboardBody">
-                        <!-- Populated by JS -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        
+                <!-- SYSTEM STATUS & DATA HEALTH PANEL -->
+                <div class="panel status-panel">
+                    <div class="panel-header">
+                        <h2>Infrastructure & Providers</h2>
+                    </div>
+                    <div class="sys-list">
+                        <div class="sys-item">
+                            <span class="sys-name">FastAPI Decision Server</span>
+                            <span class="sys-status green-text" id="sysApi">ONLINE (8000)</span>
+                        </div>
+                        <div class="sys-item">
+                            <span class="sys-name">Traffic Intelligence Stream</span>
+                            <span class="sys-status green-text" id="sysTraffic">LIVE NORMALIZED</span>
+                        </div>
+                        <div class="sys-item">
+                            <span class="sys-name">Geotab Dataset Provenance</span>
+                            <span class="sys-status highlight-cyan">VALIDATED</span>
+                        </div>
+                        <div class="sys-item">
+                            <span class="sys-name">Digital Twin Simulator Bridge</span>
+                            <span class="sys-status amber-text" id="sysSim">STANDBY (PHASE 1)</span>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+        </main>
+
     </div>
 
+    <!-- P0 Clean Frontend Scripts -->
     <script src="app.js"></script>
 </body>
 </html>
