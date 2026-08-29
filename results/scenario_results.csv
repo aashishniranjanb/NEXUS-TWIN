@@ -1,5 +1,5 @@
 strategy_id,strategy_type,predicted_delay_s,predicted_queue_m,predicted_throughput,predicted_emissions_kg,predicted_emergency_delay_s,score,success
-cand_do_nothing,do_nothing,3.77,137.21,26,29.912,179.0,692.94,True
-cand_green_extend_20s,green_extend,3.37,125.71,26,29.049,179.0,680.6,True
-cand_diversion_30pct,diversion,3.87,139.92,26,30.125,179.0,695.85,True
-cand_dynamic_lane,dynamic_lane,3.91,142.0,26,29.972,179.0,697.9,True
+cand_do_nothing,do_nothing,1.29,37.5,0,4.777,,41.18,True
+cand_green_extend_20s,green_extend,0.5,21.12,0,4.796,,35.27,True
+cand_diversion_30pct,diversion,1.36,38.25,0,4.772,,42.0,True
+cand_dynamic_lane,dynamic_lane,1.31,37.12,0,4.793,,40.83,True

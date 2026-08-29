@@ -1,6 +1,6 @@
 {
     "candidate_count": 4,
-    "horizon_seconds": 180,
-    "total_wall_clock_seconds": 24.742,
-    "avg_seconds_per_candidate": 6.186
+    "horizon_seconds": 60,
+    "total_wall_clock_seconds": 4.521,
+    "avg_seconds_per_candidate": 1.13
 }

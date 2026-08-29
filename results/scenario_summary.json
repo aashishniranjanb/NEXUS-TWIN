@@ -1,12 +1,12 @@
 {
-    "decision_point_step": 300,
+    "decision_point_step": 50,
     "selected_strategy": "cand_green_extend_20s",
-    "selected_score": 680.6,
+    "selected_score": 35.27,
     "explanation": {
         "action": "Extend Green Signal Phase by +20s at J1",
-        "reason": "Achieves lowest network-wide score (680.6) among evaluated options. Reduces average delay by 10.6% compared to next-best candidate (do_nothing) without causing queue spillback transfer.",
-        "expected_impact": "Delay: +10.6%, Queue Length: +8.4%, CO2 Emissions: +2.9%",
-        "confidence": "66%"
+        "reason": "Achieves lowest network-wide score (35.27) among evaluated options. Reduces average delay by 61.8% compared to next-best candidate (dynamic_lane) without causing queue spillback transfer.",
+        "expected_impact": "Delay: +61.2%, Queue Length: +43.7%, CO2 Emissions: -0.4%",
+        "confidence": "55%"
     },
     "candidates_evaluated": 4
 }

@@ -3,22 +3,22 @@
         "strategy_id": "cand_do_nothing",
         "strategy_type": "do_nothing",
         "parameters": {},
-        "simulation_start_time": 300.0,
-        "simulation_end_time": 480.0,
-        "horizon_seconds": 180.0,
-        "predicted_delay_s": 3.77,
-        "predicted_queue_m": 137.21,
-        "predicted_throughput": 26,
-        "predicted_emissions": 29.912,
-        "predicted_emergency_delay_s": 179.0,
+        "simulation_start_time": 50.0,
+        "simulation_end_time": 110.0,
+        "horizon_seconds": 60.0,
+        "predicted_delay_s": 1.29,
+        "predicted_queue_m": 37.5,
+        "predicted_throughput": 0,
+        "predicted_emissions": 4.777,
+        "predicted_emergency_delay_s": null,
         "per_junction_metrics": {
             "J1": {
-                "total_halting": 5,
-                "queue_m": 37.5
-            },
-            "J2": {
                 "total_halting": 4,
                 "queue_m": 30.0
+            },
+            "J2": {
+                "total_halting": 0,
+                "queue_m": 0.0
             },
             "J3": {
                 "total_halting": 0,
@@ -26,10 +26,10 @@
             }
         },
         "network_metrics": {
-            "avg_speed_kmh": 32.83,
-            "predicted_emissions_kg": 29.912
+            "avg_speed_kmh": 37.05,
+            "predicted_emissions_kg": 4.777
         },
-        "score": 692.94,
+        "score": 41.18,
         "success": true,
         "error_message": null
     },
@@ -40,22 +40,22 @@
             "junction_id": "J1",
             "extension_seconds": 20
         },
-        "simulation_start_time": 300.0,
-        "simulation_end_time": 480.0,
-        "horizon_seconds": 180.0,
-        "predicted_delay_s": 3.37,
-        "predicted_queue_m": 125.71,
-        "predicted_throughput": 26,
-        "predicted_emissions": 29.049,
-        "predicted_emergency_delay_s": 179.0,
+        "simulation_start_time": 50.0,
+        "simulation_end_time": 110.0,
+        "horizon_seconds": 60.0,
+        "predicted_delay_s": 0.5,
+        "predicted_queue_m": 21.12,
+        "predicted_throughput": 0,
+        "predicted_emissions": 4.796,
+        "predicted_emergency_delay_s": null,
         "per_junction_metrics": {
             "J1": {
-                "total_halting": 3,
-                "queue_m": 22.5
+                "total_halting": 5,
+                "queue_m": 37.5
             },
             "J2": {
-                "total_halting": 4,
-                "queue_m": 30.0
+                "total_halting": 0,
+                "queue_m": 0.0
             },
             "J3": {
                 "total_halting": 0,
@@ -63,10 +63,10 @@
             }
         },
         "network_metrics": {
-            "avg_speed_kmh": 33.79,
-            "predicted_emissions_kg": 29.049
+            "avg_speed_kmh": 39.77,
+            "predicted_emissions_kg": 4.796
         },
-        "score": 680.6,
+        "score": 35.27,
         "success": true,
         "error_message": null
     },
@@ -84,22 +84,22 @@
             ],
             "diversion_percent": 30
         },
-        "simulation_start_time": 300.0,
-        "simulation_end_time": 480.0,
-        "horizon_seconds": 180.0,
-        "predicted_delay_s": 3.87,
-        "predicted_queue_m": 139.92,
-        "predicted_throughput": 26,
-        "predicted_emissions": 30.125,
-        "predicted_emergency_delay_s": 179.0,
+        "simulation_start_time": 50.0,
+        "simulation_end_time": 110.0,
+        "horizon_seconds": 60.0,
+        "predicted_delay_s": 1.36,
+        "predicted_queue_m": 38.25,
+        "predicted_throughput": 0,
+        "predicted_emissions": 4.772,
+        "predicted_emergency_delay_s": null,
         "per_junction_metrics": {
             "J1": {
-                "total_halting": 3,
-                "queue_m": 22.5
+                "total_halting": 4,
+                "queue_m": 30.0
             },
             "J2": {
-                "total_halting": 3,
-                "queue_m": 22.5
+                "total_halting": 0,
+                "queue_m": 0.0
             },
             "J3": {
                 "total_halting": 0,
@@ -107,10 +107,10 @@
             }
         },
         "network_metrics": {
-            "avg_speed_kmh": 32.75,
-            "predicted_emissions_kg": 30.125
+            "avg_speed_kmh": 37.0,
+            "predicted_emissions_kg": 4.772
         },
-        "score": 695.85,
+        "score": 42.0,
         "success": true,
         "error_message": null
     },
@@ -121,22 +121,22 @@
             "edge_id": "J1_to_J2",
             "lane_index": 2
         },
-        "simulation_start_time": 300.0,
-        "simulation_end_time": 480.0,
-        "horizon_seconds": 180.0,
-        "predicted_delay_s": 3.91,
-        "predicted_queue_m": 142.0,
-        "predicted_throughput": 26,
-        "predicted_emissions": 29.972,
-        "predicted_emergency_delay_s": 179.0,
+        "simulation_start_time": 50.0,
+        "simulation_end_time": 110.0,
+        "horizon_seconds": 60.0,
+        "predicted_delay_s": 1.31,
+        "predicted_queue_m": 37.12,
+        "predicted_throughput": 0,
+        "predicted_emissions": 4.793,
+        "predicted_emergency_delay_s": null,
         "per_junction_metrics": {
             "J1": {
-                "total_halting": 5,
-                "queue_m": 37.5
+                "total_halting": 3,
+                "queue_m": 22.5
             },
             "J2": {
-                "total_halting": 4,
-                "queue_m": 30.0
+                "total_halting": 0,
+                "queue_m": 0.0
             },
             "J3": {
                 "total_halting": 0,
@@ -144,10 +144,10 @@
             }
         },
         "network_metrics": {
-            "avg_speed_kmh": 32.48,
-            "predicted_emissions_kg": 29.972
+            "avg_speed_kmh": 37.11,
+            "predicted_emissions_kg": 4.793
         },
-        "score": 697.9,
+        "score": 40.83,
         "success": true,
         "error_message": null
     }
