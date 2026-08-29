@@ -48,8 +48,8 @@ class TrafficStateBuilder:
 
     def build_features_from_raw(self, context: Dict[str, Any]) -> Dict[str, Any]:
         """Maps raw/API inputs into 21 engineered context features."""
-        entry_h = str(context.get("EntryHeading", "N")).strip()
-        exit_h = str(context.get("ExitHeading", "N")).strip()
+        entry_h = str(context.get("EntryHeading", context.get("entry_heading", "N"))).strip()
+        exit_h = str(context.get("ExitHeading", context.get("exit_heading", "N"))).strip()
         
         entry_deg = HEADING_TO_DEGREES.get(entry_h, 0.0)
         exit_deg = HEADING_TO_DEGREES.get(exit_h, 0.0)
@@ -57,15 +57,15 @@ class TrafficStateBuilder:
         turn_str = classify_turn(h_delta)
         turn_code = TURN_MAP.get(turn_str, 0)
         
-        city = str(context.get("City", "Atlanta")).strip()
+        city = str(context.get("City", context.get("city", "Atlanta"))).strip()
         city_code = CITY_MAP.get(city, 0)
         
-        hour = int(context.get("Hour", 12))
-        weekend = int(context.get("Weekend", 0))
-        month = int(context.get("Month", 10))
+        hour = int(context.get("Hour", context.get("hour", 12)))
+        weekend = int(context.get("Weekend", context.get("weekend", 0)))
+        month = int(context.get("Month", context.get("month", 10)))
         
-        entry_st = str(context.get("EntryStreetName", "Main St"))
-        exit_st = str(context.get("ExitStreetName", "Main St"))
+        entry_st = str(context.get("EntryStreetName", context.get("entry_street_name", "Main St")))
+        exit_st = str(context.get("ExitStreetName", context.get("exit_street_name", "Main St")))
         is_same = int(entry_st == exit_st)
         
         entry_missing = int(entry_st in ("UNKNOWN", "", "None"))
@@ -79,7 +79,9 @@ class TrafficStateBuilder:
         is_peak = int(hour in [7, 8, 9, 16, 17, 18])
         is_night = int(hour in [22, 23, 0, 1, 2, 3, 4, 5])
         
-        inter_id = int(context.get("IntersectionId", 0))
+        inter_id = int(context.get("IntersectionId", context.get("intersection_id", 0)))
+        lat = float(context.get("Latitude", context.get("latitude", 33.75)))
+        lon = float(context.get("Longitude", context.get("longitude", -84.38)))
         path_str = str(context.get("Path", f"{entry_st}_{entry_h}_{exit_st}_{exit_h}"))
         
         # Load frequency encoders if available
@@ -100,8 +102,8 @@ class TrafficStateBuilder:
         
         return {
             "IntersectionId": inter_id,
-            "Latitude": float(context.get("Latitude", 33.75)),
-            "Longitude": float(context.get("Longitude", -84.38)),
+            "Latitude": lat,
+            "Longitude": lon,
             "entry_heading_deg": entry_deg,
             "exit_heading_deg": exit_deg,
             "heading_delta": h_delta,

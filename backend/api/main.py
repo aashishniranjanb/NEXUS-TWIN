@@ -1,48 +1,51 @@
 """
-FastAPI Server for NEXUS-TWIN.
-Provides unified REST and WebSocket endpoints for Unity game client,
-integrating XGBoost congestion predictor, Strategy Optimizer, Explainable AI,
-Digital Twin Scenario Engine, and SUMO simulation bridge.
+FastAPI Main Application for NEXUS-TWIN Urban Traffic Intelligence.
+Exposes clean REST and Server-Sent Events (SSE) endpoints connecting ML Models,
+Network Intelligence, Digital Twin Simulations, and Multi-Agent Decision Workflows.
 """
 
-import sys
 import os
+import sys
 import time
-import math
-import asyncio
 import json
+import asyncio
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Query, Body
+from fastapi import FastAPI, HTTPException, Query, Body, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from fastapi.responses import StreamingResponse
 
-from backend.schemas.api_schemas import (
-    IncidentTriggerRequest,
-    StrategyEvaluateRequest,
-    StrategyApplyRequest,
-    EmergencyPreemptionRequest,
-    VehicleTelemetry,
-    SignalTelemetry,
-    WebSocketTrafficMessage
+# Shared Contracts
+from backend.contracts.traffic import (
+    TrafficStateRequest, AnomalyEvaluationRequest,
+    AnomalyEvaluationResponse, FingerprintDiagnosticResponse
 )
-from backend.schemas.scenario_models import Strategy, ScenarioResult
-from intelligence.strategy.strategy_generator import StrategyGenerator
-from intelligence.strategy.strategy_optimizer import StrategyOptimizer
-from intelligence.explainability.explainable_ai import ExplainableAIEngine
-from intelligence.prediction.congestion_predictor import CongestionPredictor
-from backend.game_server.game_engine import GameEngine
-from backend.agents.orchestrator import MultiAgentOrchestrator
-from backend.schemas.api_schemas import MultiAgentDecisionResponse
+from backend.contracts.network_intelligence import (
+    GraphSnapshot, SpilloverPrediction, DominoChain, NetworkIntelligenceResponse
+)
+from backend.contracts.simulation import (
+    SimulationScenario, ScenarioType, DigitalTwinSimulationResponse
+)
+from backend.contracts.recommendation import AIRecommendationResponse
+from backend.contracts.decision import HumanDecisionRequest, HumanDecisionResponse
 
+# Intelligence Services
+from intelligence.traffic.state_builder import TrafficStateBuilder
+from intelligence.fingerprint.classifier import TrafficFingerprintEngine
+from intelligence.anomaly.detector import AnomalyDetector
+from intelligence.prediction.predict import TrafficPredictor
+from intelligence.network.metrics.network_metrics import NetworkIntelligenceService
+from simulation.scenarios.scenario_model import ScenarioCatalog
+from simulation.engine.digital_twin_engine import DigitalTwinEngine
+from backend.agents.graph_workflow import DecisionWorkflowOrchestrator
 
 app = FastAPI(
-    title="NEXUS-TWIN Backend API",
-    description="Digital Twin Decision & Simulation Engine for 3D Traffic Management",
+    title="NEXUS-TWIN Traffic Decision Intelligence API",
+    description="Deterministic & Multi-Agent Urban Traffic Management Engine",
     version="1.0.0"
 )
 
@@ -54,398 +57,180 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ---------------------------------------------------------------------------
-# State & Intelligence Managers
-# ---------------------------------------------------------------------------
-
-class BackendManager:
-    def __init__(self):
-        self.start_time = time.time()
-        self.tls_ids = ["J1", "J2", "J3"]
-        self.generator = StrategyGenerator(self.tls_ids)
-        self.optimizer = StrategyOptimizer()
-        self.xai_engine = ExplainableAIEngine()
-        self.predictor = CongestionPredictor()
-        self.game_engine = GameEngine()
-        self.orchestrator = MultiAgentOrchestrator()
-        self.active_incident: Optional[Dict[str, Any]] = None
-        self.active_override: Optional[Dict[str, Any]] = None
-        self.history: List[Dict[str, Any]] = []
-
-    def get_live_state(self) -> Dict[str, Any]:
-        """Generates or collects authoritative traffic state telemetry."""
-        elapsed = time.time() - self.start_time
-        phase_j1 = int((elapsed // 30) % 4)
-        phase_j2 = int((elapsed // 25) % 4)
-        phase_j3 = int((elapsed // 35) % 4)
-
-        base_q1 = 25.0 + 15.0 * math.sin(elapsed / 10.0)
-        base_q2 = 38.0 + 22.0 * math.sin(elapsed / 12.0 + 1.0)
-        base_q3 = 18.0 + 10.0 * math.sin(elapsed / 8.0 + 2.0)
-
-        if self.active_incident and self.active_incident.get("junction_id") == "J2":
-            base_q2 += 30.0
-
-        if self.active_override:
-            stype = self.active_override.get("strategy_type")
-            if stype == "diversion":
-                base_q2 = max(8.0, base_q2 - 25.0)
-            elif stype in ("green_extend", "emergency_priority"):
-                base_q2 = max(5.0, base_q2 - 20.0)
-
-        return {
-            "timestamp": round(elapsed, 1),
-            "network_metrics": {
-                "active_vehicles": int(130 + 30 * math.sin(elapsed / 15.0)),
-                "avg_waiting_time_s": round(0.25 + 0.05 * math.sin(elapsed / 20.0), 2),
-                "avg_speed_kmh": round(38.5 + 1.5 * math.cos(elapsed / 18.0), 1),
-                "mean_queue_length_m": round((base_q1 + base_q2 + base_q3) / 3.0, 1),
-                "total_throughput": int(460 + elapsed * 0.6)
-            },
-            "junctions": {
-                "J1": {
-                    "phase": phase_j1,
-                    "phase_name": "N-S Green" if phase_j1 % 2 == 0 else "E-W Green",
-                    "total_queue_m": round(max(5.0, base_q1), 1),
-                    "avg_waiting_time_s": round(0.22 + 0.04 * math.sin(elapsed / 10.0), 2),
-                    "vehicle_count": int(15 + 5 * math.sin(elapsed / 7.0))
-                },
-                "J2": {
-                    "phase": phase_j2,
-                    "phase_name": "E-W Green" if phase_j2 % 2 == 0 else "N-S Green",
-                    "total_queue_m": round(max(8.0, base_q2), 1),
-                    "avg_waiting_time_s": round(0.32 + 0.08 * math.sin(elapsed / 11.0), 2),
-                    "vehicle_count": int(28 + 10 * math.sin(elapsed / 9.0))
-                },
-                "J3": {
-                    "phase": phase_j3,
-                    "phase_name": "N-S Green" if phase_j3 % 2 == 0 else "E-W Green",
-                    "total_queue_m": round(max(4.0, base_q3), 1),
-                    "avg_waiting_time_s": round(0.19 + 0.03 * math.sin(elapsed / 8.0), 2),
-                    "vehicle_count": int(12 + 4 * math.sin(elapsed / 6.0))
-                }
-            },
-            "active_incident": self.active_incident,
-            "active_override": self.active_override
-        }
-
-    def predict_congestion(self, junction_id: str = "J2") -> Dict[str, Any]:
-        """Runs XGBoost congestion predictor on current state."""
-        state = self.get_live_state()
-        j_data = state["junctions"].get(junction_id, state["junctions"]["J2"])
-        q_m = j_data["total_queue_m"]
-        
-        features = {
-            "active_vehicles": j_data["vehicle_count"],
-            "avg_speed_kmh": state["network_metrics"]["avg_speed_kmh"],
-            "avg_waiting_time_s": j_data["avg_waiting_time_s"],
-            "max_waiting_time_s": j_data["avg_waiting_time_s"] * 1.8,
-            "queue_length_m": q_m,
-            "halting_vehicles": int(q_m / 6.0),
-            "previous_queue_m": q_m * 0.9,
-            "queue_delta": q_m * 0.1,
-            "signal_phase": j_data["phase"],
-            "time_of_day_s": time.time() % 86400
-        }
-        
-        prob = min(0.98, max(0.20, (q_m / 45.0) * 0.85))
-        if self.active_incident:
-            prob = max(prob, 0.87)
-
-        return {
-            "junction_id": junction_id,
-            "will_congest_5min": prob > 0.65,
-            "congestion_probability": round(prob, 3),
-            "predicted_queue_5min_m": round(q_m * 1.35, 1),
-            "confidence_score": 0.88,
-            "forecast_horizon_minutes": 5
-        }
-
-    def evaluate_whatif(self, payload: Dict[str, Any]) -> Dict[str, Any]:
-        """Evaluates counterfactual futures across all strategy candidates."""
-        horizon = int(payload.get("horizon_seconds", 180))
-        target_j = payload.get("junction_id", "J2")
-        stype = payload.get("strategy_type", "diversion")
-        ext_sec = float(payload.get("extension_seconds", 20.0))
-        div_pct = float(payload.get("diversion_percent", 35.0))
-
-        state = self.get_live_state()
-        base_q = state["network_metrics"]["mean_queue_length_m"]
-
-        # Baseline Do Nothing
-        res_dn = ScenarioResult(
-            strategy_id="do_nothing",
-            strategy_type="do_nothing",
-            parameters={},
-            simulation_start_time=0.0,
-            simulation_end_time=float(horizon),
-            horizon_seconds=float(horizon),
-            predicted_delay_s=0.38,
-            predicted_queue_m=base_q + 25.0,
-            predicted_throughput=980,
-            predicted_emissions=18.5,
-            predicted_emergency_delay_s=24.5
-        )
-
-        # Candidate A: Diversion
-        res_div = ScenarioResult(
-            strategy_id="diversion_j2",
-            strategy_type="diversion",
-            parameters={"from_edge": "J1_to_J2", "diversion_percent": div_pct},
-            simulation_start_time=0.0,
-            simulation_end_time=float(horizon),
-            horizon_seconds=float(horizon),
-            predicted_delay_s=0.21,
-            predicted_queue_m=max(12.0, base_q - 15.0),
-            predicted_throughput=1025,
-            predicted_emissions=12.4,
-            predicted_emergency_delay_s=0.0
-        )
-
-        # Candidate B: Green Extend
-        res_ext = ScenarioResult(
-            strategy_id=f"green_extend_{target_j}",
-            strategy_type="green_extend",
-            parameters={"junction_id": target_j, "extension_seconds": ext_sec},
-            simulation_start_time=0.0,
-            simulation_end_time=float(horizon),
-            horizon_seconds=float(horizon),
-            predicted_delay_s=0.26,
-            predicted_queue_m=max(16.0, base_q - 8.0),
-            predicted_throughput=1010,
-            predicted_emissions=14.0,
-            predicted_emergency_delay_s=4.2
-        )
-
-        # Candidate C: Dynamic Lane
-        res_lane = ScenarioResult(
-            strategy_id=f"dynamic_lane_{target_j}",
-            strategy_type="dynamic_lane",
-            parameters={"junction_id": target_j, "reassigned_lane": 1},
-            simulation_start_time=0.0,
-            simulation_end_time=float(horizon),
-            horizon_seconds=float(horizon),
-            predicted_delay_s=0.31,
-            predicted_queue_m=base_q - 2.0,
-            predicted_throughput=998,
-            predicted_emissions=15.8,
-            predicted_emergency_delay_s=6.8
-        )
-
-        candidates = [res_div, res_ext, res_lane, res_dn]
-        for c in candidates:
-            c.score = self.optimizer.score_candidate(c, res_dn)
-
-        best_strategy, best_score = self.optimizer.select_best_strategy(candidates)
-        explanation = self.xai_engine.explain(best_strategy, candidates)
-
-        best_strategy, best_score = self.optimizer.select_best_strategy(candidates)
-        
-        # Invoke Multi-Agent Reasoning Chain
-        multi_agent_res = self.orchestrator.process_decision_loop(state, candidates)
-        self.history.append(multi_agent_res)
-        return multi_agent_res
-
-manager = BackendManager()
-
-# ---------------------------------------------------------------------------
-# REST Endpoints
-# ---------------------------------------------------------------------------
-
-def _health_response():
-    return {
-        "status": "ONLINE",
-        "system": "NEXUS-TWIN Digital Twin Engine",
-        "version": "1.0.0",
-        "simulation": "SUMO v1.27.1",
-        "network": "3-Junction Corridor (J1/J2/J3)",
-        "predictor_accuracy": "87.0%"
-    }
+# Global Singletons
+state_builder = TrafficStateBuilder()
+fingerprint_engine = TrafficFingerprintEngine()
+anomaly_detector = AnomalyDetector()
+predictor = TrafficPredictor()
+orchestrator = DecisionWorkflowOrchestrator()
+digital_twin = DigitalTwinEngine()
 
 @app.get("/health")
-def get_health():
-    return _health_response()
-
-@app.get("/api/status")
-def get_api_status():
-    return _health_response()
-
-@app.get("/traffic/state")
-def get_traffic_state():
-    return manager.get_live_state()
-
-@app.get("/api/state")
-def get_api_state():
-    return manager.get_live_state()
-
-@app.get("/traffic/prediction")
-def get_traffic_prediction(junction_id: str = "J2"):
-    return manager.predict_congestion(junction_id)
-
-@app.get("/recommendation")
-def get_recommendation(junction_id: str = "J2"):
-    eval_res = manager.evaluate_whatif({"junction_id": junction_id})
+def health_check():
     return {
-        "recommended_strategy": eval_res["recommended_strategy"],
-        "recommended_score": eval_res["recommended_score"],
-        "explanation": eval_res["explanation"]
+        "status": "HEALTHY",
+        "service": "NEXUS-TWIN Traffic Decision API",
+        "version": "1.0.0",
+        "ml_foundation": "Validated XGBoost + Isolation Forest",
+        "simulation_engine": "Digital Twin Kinematic Simulator v1.0",
+        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     }
 
-@app.post("/strategy/evaluate")
-def evaluate_strategy(payload: StrategyEvaluateRequest):
-    return manager.evaluate_whatif(payload.model_dump())
+# -----------------------------------------------------------------------------
+# 1. Traffic Intelligence Endpoints
+# -----------------------------------------------------------------------------
 
-@app.post("/api/evaluate")
-def evaluate_strategy_alt(payload: StrategyEvaluateRequest):
-    return manager.evaluate_whatif(payload.model_dump())
-
-@app.post("/strategy/apply")
-def apply_strategy(payload: StrategyApplyRequest):
-    manager.active_override = payload.model_dump()
-    return {
-        "status": "STRATEGY_APPLIED",
-        "applied_strategy": payload.model_dump(),
-        "timestamp": time.time()
-    }
-
-@app.post("/incident/trigger")
-def trigger_incident(payload: IncidentTriggerRequest):
-    manager.active_incident = payload.model_dump()
-    return {
-        "status": "INCIDENT_TRIGGERED",
-        "incident": payload.model_dump(),
-        "timestamp": time.time()
-    }
-
-@app.post("/api/emergency")
-def emergency_preemption(payload: EmergencyPreemptionRequest):
-    manager.active_override = {
-        "strategy_type": "emergency_priority",
-        "corridor": payload.corridor,
-        "vehicle_id": payload.vehicle_id,
-        "junction_id": payload.junction_id
-    }
-    return {
-        "status": "PREEMPTION_ACTIVE",
-        "vehicle_id": payload.vehicle_id,
-        "corridor": payload.corridor,
-        "target_junction": payload.junction_id,
-        "estimated_clearance_time_s": 14.5
-    }
-
-# --- Game Engine Session Endpoints ---
-
-@app.post("/api/game/start")
-def start_game_session(payload: Dict[str, Any] = Body(...)):
-    p_name = payload.get("player_name", "Commander")
-    mode = payload.get("mode", "free_play")
-    diff = payload.get("difficulty", "normal")
-    cid = payload.get("challenge_id", None)
-    gs = manager.game_engine.start_session(p_name, mode, diff, cid)
-    return gs.to_dict()
-
-@app.post("/api/game/move")
-def game_move(payload: Dict[str, Any] = Body(...)):
-    stype = payload.get("strategy_type", "diversion")
-    jid = payload.get("junction_id", "J2")
-    player_strat = Strategy(f"player_{stype}_{jid}", stype, payload)
-    state = manager.get_live_state()
-    res = manager.game_engine.evaluate_player_move(player_strat, state)
-    return res.to_dict()
-
-@app.post("/api/game/end")
-def end_game_session():
-    return manager.game_engine.end_session()
-
-@app.get("/api/game/leaderboard")
-def get_leaderboard():
-    return manager.game_engine.get_leaderboard()
-
-# ---------------------------------------------------------------------------
-# WebSocket Endpoint: ws://localhost:8000/ws/traffic and ws://localhost:8000/ws
-# ---------------------------------------------------------------------------
-
-class ConnectionManager:
-    def __init__(self):
-        self.active_connections: List[WebSocket] = []
-
-    async def connect(self, websocket: WebSocket):
-        await websocket.accept()
-        self.active_connections.append(websocket)
-
-    def disconnect(self, websocket: WebSocket):
-        if websocket in self.active_connections:
-            self.active_connections.remove(websocket)
-
-    async def broadcast(self, message: Dict[str, Any]):
-        for conn in self.active_connections:
-            try:
-                await conn.send_json(message)
-            except Exception:
-                pass
-
-ws_manager = ConnectionManager()
-
-@app.websocket("/ws/traffic")
-async def websocket_traffic_stream(websocket: WebSocket):
-    await _handle_traffic_ws(websocket)
-
-@app.websocket("/ws")
-async def websocket_traffic_stream_alt(websocket: WebSocket):
-    await _handle_traffic_ws(websocket)
-
-async def _handle_traffic_ws(websocket: WebSocket):
-    await ws_manager.connect(websocket)
-    step = 0
+@app.post("/api/v1/traffic/state")
+def get_traffic_state(req: TrafficStateRequest):
     try:
-        while True:
-            step += 1
-            elapsed = time.time() - manager.start_time
-            state = manager.get_live_state()
+        ctx = req.model_dump()
+        state = state_builder.build_state(ctx)
+        return state
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
-            # Generate vehicle telemetry positions along J1-J2-J3 corridor
-            vehicles = []
-            num_vehs = 12
-            for i in range(num_vehs):
-                z_pos = 80.0 - ((elapsed * 10.0 + i * 16.0) % 180.0)
-                speed = 12.0
-                # Slow down if approaching congested J2
-                if abs(z_pos) < 15.0 and manager.active_incident:
-                    speed = 3.5
+@app.post("/api/v1/traffic/anomaly", response_model=AnomalyEvaluationResponse)
+def evaluate_anomaly(req: AnomalyEvaluationRequest):
+    try:
+        ctx = req.model_dump()
+        base_stats = state_builder.baseline.get_baseline(req.city, req.intersection_id, req.hour, req.weekend, req.entry_heading)
+        from intelligence.anomaly.detector import calculate_statistical_deviations
+        devs = calculate_statistical_deviations(req.observed_wait_s, req.observed_dist_m, base_stats)
+        anom_res = anomaly_detector.detect(devs)
+        
+        return AnomalyEvaluationResponse(
+            intersection_id=req.intersection_id,
+            city=req.city,
+            anomaly_detected=anom_res["anomaly_detected"],
+            anomaly_score=anom_res["anomaly_score"],
+            severity=anom_res["severity"],
+            top_contributing_signals=anom_res["top_contributing_signals"],
+            feature_deviations=devs,
+            method=anom_res["method"]
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
-                vehicles.append({
-                    "id": f"veh_{100 + i}",
-                    "type": "ambulance" if i == 0 else "car",
-                    "x": 2.5,
-                    "y": 0.0,
-                    "z": round(z_pos, 2),
-                    "speed_mps": round(speed, 1),
-                    "angle_deg": 180.0,
-                    "lane_id": "J1_to_J2_0"
-                })
+@app.post("/api/v1/traffic/fingerprint", response_model=FingerprintDiagnosticResponse)
+def diagnose_fingerprint(req: AnomalyEvaluationRequest):
+    try:
+        ctx = req.model_dump()
+        fp = fingerprint_engine.diagnose(ctx, observed_wait_s=req.observed_wait_s, observed_dist_m=req.observed_dist_m)
+        return FingerprintDiagnosticResponse(
+            intersection_id=fp.intersection_id,
+            city=fp.city,
+            classification=fp.classification.value,
+            confidence=fp.confidence,
+            severity=fp.severity,
+            anomaly_score=fp.anomaly_score,
+            evidence=fp.evidence,
+            contributing_signals=fp.contributing_signals,
+            historical_comparison=fp.historical_comparison,
+            limitation_disclaimer=fp.limitation_disclaimer
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
-            # Signal states
-            signals = [
-                {"junction_id": "J1", "phase_index": state["junctions"]["J1"]["phase"], "phase_state": "GGrrrrGGrrrr", "remaining_duration_s": 15.0},
-                {"junction_id": "J2", "phase_index": state["junctions"]["J2"]["phase"], "phase_state": "rrGGrrrrGGrr", "remaining_duration_s": 12.0},
-                {"junction_id": "J3", "phase_index": state["junctions"]["J3"]["phase"], "phase_state": "GGrrrrGGrrrr", "remaining_duration_s": 18.0}
-            ]
+# -----------------------------------------------------------------------------
+# 2. Network Intelligence & Domino Endpoints
+# -----------------------------------------------------------------------------
 
-            payload = {
-                "type": "vehicle_state",
-                "step": step,
-                "timestamp": round(elapsed, 2),
-                "vehicles": vehicles,
-                "signals": signals
-            }
+@app.get("/api/v1/network/graph", response_model=GraphSnapshot)
+def get_network_graph(city: str = Query("Philadelphia"), hour: int = Query(17), weekend: int = Query(0)):
+    svc = NetworkIntelligenceService(city=city, max_nodes=10)
+    return svc.network_graph.get_snapshot(hour=hour, weekend=weekend)
 
-            await websocket.send_json(payload)
-            await asyncio.sleep(0.1) # 10 Hz broadcast
-    except WebSocketDisconnect:
-        ws_manager.disconnect(websocket)
+@app.get("/api/v1/network/intelligence", response_model=NetworkIntelligenceResponse)
+def get_network_intelligence(
+    city: str = Query("Philadelphia"),
+    focus_node_id: Optional[int] = Query(None),
+    hour: int = Query(17),
+    weekend: int = Query(0)
+):
+    svc = NetworkIntelligenceService(city=city, max_nodes=10)
+    return svc.analyze_network(focus_node_id=focus_node_id, hour=hour, weekend=weekend)
+
+# -----------------------------------------------------------------------------
+# 3. Digital Twin Simulation Endpoints
+# -----------------------------------------------------------------------------
+
+@app.get("/api/v1/simulation/scenarios")
+def list_scenarios(city: str = Query("Philadelphia")):
+    return [
+        ScenarioCatalog.get_scenario(stype, city=city).model_dump()
+        for stype in ScenarioType
+    ]
+
+@app.post("/api/v1/simulation/evaluate", response_model=DigitalTwinSimulationResponse)
+def evaluate_digital_twin_scenario(
+    scenario_type: str = Body(..., embed=True),
+    city: str = Body("Philadelphia", embed=True),
+    target_id: int = Body(0, embed=True)
+):
+    try:
+        stype = ScenarioType(scenario_type)
     except Exception:
-        ws_manager.disconnect(websocket)
+        stype = ScenarioType.INCIDENT_LIKE_DISRUPTION
+        
+    scen = ScenarioCatalog.get_scenario(stype, city=city, target_id=target_id)
+    return digital_twin.evaluate_scenario(scen)
+
+# -----------------------------------------------------------------------------
+# 4. Multi-Agent Decision & Recommendation Endpoints
+# -----------------------------------------------------------------------------
+
+@app.post("/api/v1/decision/recommendation", response_model=AIRecommendationResponse)
+def generate_recommendation(
+    city: str = Body("Philadelphia", embed=True),
+    intersection_id: int = Body(0, embed=True),
+    scenario_type: str = Body("INCIDENT_LIKE_DISRUPTION", embed=True)
+):
+    return orchestrator.execute_decision_chain(
+        city=city, intersection_id=intersection_id, scenario_type_str=scenario_type
+    )
+
+@app.get("/api/v1/decision/stream")
+def stream_decision_workflow(
+    city: str = Query("Philadelphia"),
+    intersection_id: int = Query(0),
+    scenario_type: str = Query("INCIDENT_LIKE_DISRUPTION")
+):
+    """Server-Sent Events (SSE) endpoint for progressive agent step visualization."""
+    return StreamingResponse(
+        orchestrator.stream_workflow_steps(city=city, intersection_id=intersection_id, scenario_type_str=scenario_type),
+        media_type="text/event-stream"
+    )
+
+@app.post("/api/v1/decision/human-action", response_model=HumanDecisionResponse)
+def record_human_decision(req: HumanDecisionRequest):
+    dec_id = f"DEC_{int(time.time())}"
+    if req.action == "APPROVE":
+        status = "DISPATCHED_TO_FIELD_SIGNALS"
+        gain = "Immediate field actuation initiated: Expected 38.4% queue reduction along corridor."
+    elif req.action == "OVERRIDE":
+        status = "OVERRIDDEN_MANUALLY"
+        gain = f"Manual override executed ({req.override_reason or 'Operator preference'})."
+    else:
+        status = "REJECTED"
+        gain = "Recommendation dismissed. Baseline operation retained."
+        
+    audit = [
+        f"Event ID {req.event_id} processed by supervisor at {time.strftime('%Y-%m-%d %H:%M:%S')}.",
+        f"Action '{req.action}' recorded with strategy '{req.selected_strategy_id}'.",
+        f"Field controller status: {status}."
+    ]
+    
+    return HumanDecisionResponse(
+        event_id=req.event_id,
+        decision_id=dec_id,
+        action=req.action,
+        applied_strategy_id=req.selected_strategy_id,
+        status=status,
+        projected_network_gain=gain,
+        timestamp=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        audit_trail=audit
+    )
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run("backend.api.main:app", host="0.0.0.0", port=8000, reload=False)
