@@ -1,0 +1,28 @@
+{
+  "source_raw_file": "C:\\Users\\shang\\OneDrive\\Desktop\\traffic AI\\data\\train.csv",
+  "output_file": "C:\\Users\\shang\\OneDrive\\Desktop\\traffic AI\\data\\processed\\traffic_clean.parquet",
+  "total_rows": 856387,
+  "total_columns": 31,
+  "file_size_mb": 16.21,
+  "processing_time_seconds": 5.28,
+  "missing_imputations": {
+    "EntryStreetName": {
+      "imputed_count": 8148,
+      "strategy": "UNKNOWN + entry_street_missing indicator"
+    },
+    "ExitStreetName": {
+      "imputed_count": 6287,
+      "strategy": "UNKNOWN + exit_street_missing indicator"
+    }
+  },
+  "added_columns": [
+    "entry_street_missing",
+    "exit_street_missing",
+    "is_same_street"
+  ],
+  "percentile_validation_violations": {
+    "TotalTimeStopped": 0,
+    "TimeFromFirstStop": 0,
+    "DistanceToFirstStop": 0
+  }
+}

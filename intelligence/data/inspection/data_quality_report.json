@@ -1,0 +1,99 @@
+{
+  "dataset_name": "BigQuery-Geotab Intersection Congestion",
+  "total_rows": 856387,
+  "total_columns": 28,
+  "exact_duplicates": 0,
+  "duplicate_row_ids": 0,
+  "context_duplicates_same_time_movement": 14786,
+  "temporal_validity": {
+    "hour_valid_0_23": true,
+    "weekend_valid_0_1": true,
+    "month_valid_1_12": true
+  },
+  "city_distribution": {
+    "Philadelphia": 390237,
+    "Boston": 178617,
+    "Atlanta": 156484,
+    "Chicago": 131049
+  },
+  "geographic_ranges_by_city": {
+    "Atlanta": {
+      "lat_min": 33.64997,
+      "lat_max": 33.83488,
+      "lon_min": -84.53519,
+      "lon_max": -84.291,
+      "intersections_count": 377,
+      "rows_count": 156484
+    },
+    "Boston": {
+      "lat_min": 42.23723,
+      "lat_max": 42.38178,
+      "lon_min": -71.17265,
+      "lon_max": -71.02555,
+      "intersections_count": 975,
+      "rows_count": 178617
+    },
+    "Chicago": {
+      "lat_min": 41.64672,
+      "lat_max": 41.97331,
+      "lon_min": -87.86229,
+      "lon_max": -87.52641,
+      "intersections_count": 2135,
+      "rows_count": 131049
+    },
+    "Philadelphia": {
+      "lat_min": 39.8837,
+      "lat_max": 40.04503,
+      "lon_min": -75.27228,
+      "lon_max": -75.02186,
+      "intersections_count": 1318,
+      "rows_count": 390237
+    }
+  },
+  "percentile_validation": {
+    "negative_value_counts": {
+      "TotalTimeStopped": 0,
+      "TimeFromFirstStop": 0,
+      "DistanceToFirstStop": 0
+    },
+    "monotonic_ordering_violations": {
+      "TotalTimeStopped": 0,
+      "TimeFromFirstStop": 0,
+      "DistanceToFirstStop": 0
+    }
+  },
+  "leakage_assessment": {
+    "contextual_safe_inference_features": [
+      "IntersectionId",
+      "Latitude",
+      "Longitude",
+      "EntryStreetName",
+      "ExitStreetName",
+      "EntryHeading",
+      "ExitHeading",
+      "Hour",
+      "Weekend",
+      "Month",
+      "Path",
+      "City"
+    ],
+    "target_family_behavioral_features": [
+      "TotalTimeStopped_p20",
+      "TotalTimeStopped_p40",
+      "TotalTimeStopped_p50",
+      "TotalTimeStopped_p60",
+      "TotalTimeStopped_p80",
+      "TimeFromFirstStop_p20",
+      "TimeFromFirstStop_p40",
+      "TimeFromFirstStop_p50",
+      "TimeFromFirstStop_p60",
+      "TimeFromFirstStop_p80",
+      "DistanceToFirstStop_p20",
+      "DistanceToFirstStop_p40",
+      "DistanceToFirstStop_p50",
+      "DistanceToFirstStop_p60",
+      "DistanceToFirstStop_p80"
+    ],
+    "leakage_rule": "CRITICAL: If the prediction target is TotalTimeStopped_p50 (or any behavioral percentile), NONE of the other 14 behavioral percentile columns (TotalTimeStopped_*, TimeFromFirstStop_*, DistanceToFirstStop_*) may be used as training inputs for the same observation. They represent contemporaneous measurements and constitute severe target leakage."
+  }
+}

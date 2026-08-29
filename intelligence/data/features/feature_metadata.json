@@ -1,0 +1,17 @@
+{
+  "source_clean_parquet": "C:\\Users\\shang\\OneDrive\\Desktop\\traffic AI\\data\\processed\\traffic_clean.parquet",
+  "output_feature_matrix": "C:\\Users\\shang\\OneDrive\\Desktop\\traffic AI\\data\\processed\\feature_matrix.parquet",
+  "total_rows": 856387,
+  "total_columns": 46,
+  "num_context_safe_features": 21,
+  "num_behavioral_targets": 15,
+  "file_size_mb": 19.32,
+  "processing_time_seconds": 2.84,
+  "turn_type_distribution": {
+    "Straight": 597681,
+    "Left": 130703,
+    "Right": 127360,
+    "U-Turn": 643
+  },
+  "leakage_boundary": "Only context_safe_inference_features may be used as model inputs when predicting any behavioral_target_columns."
+}

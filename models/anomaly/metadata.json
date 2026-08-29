@@ -1,0 +1,12 @@
+{
+  "model_type": "IsolationForest",
+  "contamination": 0.05,
+  "features": [
+    "waiting_time_z",
+    "distance_z",
+    "speed_drop_ratio",
+    "directional_imbalance"
+  ],
+  "trained_samples": 25000,
+  "version": "1.0.0"
+}

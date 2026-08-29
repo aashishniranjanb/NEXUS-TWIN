@@ -1,0 +1,10 @@
+{
+  "target": "TotalTimeStopped_p50",
+  "validation_samples": 171278,
+  "validation_mae_seconds": 8.333,
+  "validation_rmse_seconds": 13.159,
+  "validation_r2_score": 0.3032,
+  "naive_baseline_mae_seconds": 7.783,
+  "naive_baseline_rmse_seconds": 17.581,
+  "mae_improvement_percent": -7.07
+}
