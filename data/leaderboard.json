@@ -34,6 +34,17 @@
   },
   {
     "player": "TestPilot",
+    "score": 321,
+    "mode": "free_play",
+    "decisions": 1,
+    "badges": [
+      "grand_commander"
+    ],
+    "max_streak": 1,
+    "timestamp": "2026-08-29T13:43:33Z"
+  },
+  {
+    "player": "TestPilot",
     "score": 320,
     "mode": "free_play",
     "decisions": 1,

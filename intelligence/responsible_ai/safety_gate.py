@@ -82,3 +82,4 @@ class SafetyGate:
                 safe_results.append(res)
 
         return safe_results, assessments
+

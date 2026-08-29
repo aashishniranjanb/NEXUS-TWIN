@@ -67,3 +67,4 @@ class DecisionAudit(BaseModel):
     human_action: Optional[str] = None  # APPROVE, REJECT, TRY_ANOTHER
     applied_strategy: Optional[str] = None
     final_outcome: Optional[Dict[str, Any]] = None
+

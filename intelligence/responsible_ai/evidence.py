@@ -50,3 +50,4 @@ class ExplanationValidator:
             return False
 
         return True
+
