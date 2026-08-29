@@ -1,5 +1,5 @@
 /* ==============================================================================
-   NEXUS-TWIN P0 Command Center Stylesheet
+   NEXUS-TWIN P1 Intelligence Command Center Stylesheet
    Design Language: Intelligent Transportation Command Center (Inter, Semantic Colors)
 ============================================================================== */
 
@@ -24,6 +24,8 @@
     --amber-glow: rgba(255, 176, 32, 0.2);
     --red: #EF4444;
     --red-glow: rgba(239, 68, 68, 0.2);
+    --purple: #A855F7;
+    --purple-glow: rgba(168, 85, 247, 0.2);
 
     --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
@@ -163,6 +165,31 @@ body {
     background: rgba(34, 199, 214, 0.25);
 }
 
+/* LAYER TOGGLES */
+.layer-toggles {
+    display: flex;
+    gap: 6px;
+    margin-right: 12px;
+}
+
+.layer-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    color: var(--text-dim);
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.layer-btn.active {
+    background: rgba(34, 199, 214, 0.15);
+    border-color: var(--cyan);
+    color: var(--cyan);
+}
+
 /* GLOBAL METRICS STRIP */
 .global-metrics-strip {
     display: grid;
@@ -229,7 +256,7 @@ body {
 }
 
 .panel-header h2 {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 700;
     color: #FFFFFF;
 }
@@ -239,6 +266,11 @@ body {
     color: var(--text-dim);
     display: block;
     margin-top: 2px;
+}
+
+.map-controls {
+    display: flex;
+    align-items: center;
 }
 
 .mode-tag {
@@ -298,6 +330,7 @@ canvas {
 .dot.amber { background: var(--amber); }
 .dot.red { background: var(--red); }
 .dot.cyan { background: var(--cyan); }
+.dot.purple { background: var(--purple); }
 
 /* JUNCTION CARDS GRID */
 .junction-cards-grid {
@@ -330,7 +363,7 @@ canvas {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     padding-bottom: 6px;
 }
@@ -372,6 +405,131 @@ canvas {
     color: var(--text-main);
 }
 
+/* DOMINO CASCADE MATRIX (P1 Hero) */
+.domino-paths-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.domino-path-card {
+    background: #091524;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.domino-path-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 700;
+    font-size: 12px;
+}
+
+.domino-prob {
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.domino-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+/* INTERVENTION WINDOW PANEL */
+.intervention-panel {
+    border-color: rgba(255, 176, 32, 0.4);
+    background: rgba(255, 176, 32, 0.04);
+}
+
+.countdown-badge {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--amber);
+    background: rgba(255, 176, 32, 0.15);
+    border: 1px solid var(--amber);
+    padding: 4px 10px;
+    border-radius: 4px;
+    letter-spacing: 1px;
+}
+
+.intervention-status-bar {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    margin: 8px 0 10px 0;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: var(--amber);
+    box-shadow: 0 0 8px var(--amber);
+    transition: width 0.3s ease;
+}
+
+.intervention-desc {
+    font-size: 11.5px;
+    color: var(--text-muted);
+    line-height: 1.35;
+}
+
+/* FINGERPRINT HERO & EVIDENCE */
+.fingerprint-hero {
+    background: #091524;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 12px;
+}
+
+.fp-type-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--cyan);
+    margin-bottom: 4px;
+}
+
+.fp-confidence {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.evidence-block {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.evidence-header {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-dim);
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+}
+
+.evidence-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.evidence-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    padding: 5px 8px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 4px;
+    border-left: 2px solid var(--cyan);
+}
+
 /* AI PREDICTION PANEL */
 .ai-badge {
     background: rgba(34, 199, 214, 0.15);
@@ -387,8 +545,8 @@ canvas {
     background: #091524;
     border: 1px solid var(--border-color);
     border-radius: 6px;
-    padding: 14px;
-    margin-bottom: 14px;
+    padding: 12px;
+    margin-bottom: 12px;
 }
 
 .pred-meta {
@@ -407,7 +565,7 @@ canvas {
 }
 
 .pred-percentage {
-    font-size: 38px;
+    font-size: 34px;
     font-weight: 800;
     line-height: 1;
 }
@@ -423,44 +581,69 @@ canvas {
 .pred-details-list {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
     border-bottom: 1px solid var(--border-color);
-    padding-bottom: 12px;
-    margin-bottom: 12px;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
 }
 
 .pred-detail-row {
     display: flex;
     justify-content: space-between;
-    font-size: 12px;
+    font-size: 11.5px;
 }
 .detail-label { color: var(--text-muted); }
 .detail-val { font-weight: 600; color: var(--text-main); }
 
 .responsible-ai-note {
     display: flex;
-    gap: 8px;
-    font-size: 11px;
+    gap: 6px;
+    font-size: 10.5px;
     color: var(--text-dim);
     line-height: 1.3;
 }
 
-/* SYSTEM STATUS PANEL */
-.sys-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+/* EVENT FEED PANEL */
+.live-pulse-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    animation: pulse 1.5s infinite;
 }
 
-.sys-item {
+@keyframes pulse {
+    0% { opacity: 0.4; }
+    50% { opacity: 1; }
+    100% { opacity: 0.4; }
+}
+
+.event-feed-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 140px;
+    overflow-y: auto;
+}
+
+.event-feed-item {
     display: flex;
     justify-content: space-between;
     font-size: 11px;
-    padding: 4px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    padding: 5px 8px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.02);
+    border-left: 2px solid var(--blue);
 }
-.sys-name { color: var(--text-muted); }
-.sys-status { font-weight: 700; }
+
+.event-feed-item.critical { border-left-color: var(--red); }
+.event-feed-item.warning { border-left-color: var(--amber); }
+
+.event-time {
+    color: var(--text-dim);
+    font-size: 10px;
+}
 
 /* UTILITY COLORS */
 .highlight { color: #FFFFFF; font-weight: 700; }
@@ -468,6 +651,7 @@ canvas {
 .green-text { color: var(--green); }
 .amber-text { color: var(--amber); }
 .danger-text, .red-text { color: var(--red); }
+.purple-text { color: var(--purple); }
 
 /* RESPONSIVE */
 @media (max-width: 1080px) {

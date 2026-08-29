@@ -79,6 +79,13 @@
                             <span class="panel-sub">Interactive Topology & Live Queue Propagation</span>
                         </div>
                         <div class="map-controls">
+                            <!-- Overlay Toggle Badges -->
+                            <div class="layer-toggles">
+                                <button class="layer-btn active" id="toggleTrafficLayer" data-layer="traffic">Traffic</button>
+                                <button class="layer-btn active" id="togglePredictionLayer" data-layer="prediction">Prediction</button>
+                                <button class="layer-btn active" id="toggleAnomalyLayer" data-layer="anomaly">Anomalies</button>
+                                <button class="layer-btn active" id="toggleSpilloverLayer" data-layer="spillover">Spillover</button>
+                            </div>
                             <span class="mode-tag" id="liveTag">LIVE TELEMETRY</span>
                         </div>
                     </div>
@@ -93,6 +100,7 @@
                             <div class="legend-item"><span class="dot amber"></span> Warning / Slow</div>
                             <div class="legend-item"><span class="dot red"></span> Critical Queue</div>
                             <div class="legend-item"><span class="dot cyan"></span> Selected Node</div>
+                            <div class="legend-item"><span class="dot purple"></span> Domino Path</div>
                         </div>
                     </div>
                 </div>
@@ -119,6 +127,10 @@
                                 <span class="lbl">Signal:</span>
                                 <span class="val green-text" id="signalJ1">GREEN</span>
                             </div>
+                            <div class="card-metric">
+                                <span class="lbl">Anomaly:</span>
+                                <span class="val green-text" id="anomJ1">None (0.08)</span>
+                            </div>
                         </div>
                     </div>
 
@@ -140,6 +152,10 @@
                             <div class="card-metric">
                                 <span class="lbl">Signal:</span>
                                 <span class="val red-text" id="signalJ2">RED</span>
+                            </div>
+                            <div class="card-metric">
+                                <span class="lbl">Anomaly:</span>
+                                <span class="val danger-text" id="anomJ2">ABNORMAL (0.91)</span>
                             </div>
                         </div>
                     </div>
@@ -163,18 +179,79 @@
                                 <span class="lbl">Signal:</span>
                                 <span class="val green-text" id="signalJ3">GREEN</span>
                             </div>
+                            <div class="card-metric">
+                                <span class="lbl">Anomaly:</span>
+                                <span class="val amber-text" id="anomJ3">ELEVATED (0.42)</span>
+                            </div>
                         </div>
                     </div>
 
                 </div>
 
+                <!-- DOMINO CONGESTION PROPAGATION MATRIX PANEL (P1 Hero) -->
+                <div class="panel domino-panel">
+                    <div class="panel-header">
+                        <div class="panel-title-wrap">
+                            <h2>NetworkX Congestion Domino & Spillover Cascade</h2>
+                            <span class="panel-sub">Estimated Path Propagation & Upstream Ripple</span>
+                        </div>
+                        <span class="ai-badge">Graph Topology</span>
+                    </div>
+
+                    <div class="domino-paths-grid" id="dominoPathsGrid">
+                        <!-- Populated Dynamically by JS -->
+                    </div>
+                </div>
+
             </section>
 
 
-            <!-- RIGHT 4-COLUMN: AI PREDICTION & SYSTEM STATUS RAIL -->
+            <!-- RIGHT 4-COLUMN: AI INTELLIGENCE RAIL -->
             <section class="intelligence-column">
                 
-                <!-- AI PREDICTION PANEL -->
+                <!-- 1. INTELLIGENCE SUMMARY & INTERVENTION WINDOW -->
+                <div class="panel intervention-panel">
+                    <div class="panel-header">
+                        <div class="panel-title-wrap">
+                            <h2>Intervention Window</h2>
+                            <span class="panel-sub" id="interventionSub">Before predicted spillover reaches J1</span>
+                        </div>
+                        <div class="countdown-badge" id="interventionTimeBadge">06:00 MIN</div>
+                    </div>
+                    <div class="intervention-body">
+                        <div class="intervention-status-bar">
+                            <div class="progress-bar-fill" id="interventionProgress" style="width: 75%;"></div>
+                        </div>
+                        <p class="intervention-desc" id="interventionDesc">
+                            Origin at <strong class="danger-text">J2</strong> has an estimated <strong>6 minutes</strong> before queue spillback cascades upstream into <strong class="amber-text">J1</strong>.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 2. ANOMALY DETECTION & PATTERN FINGERPRINT -->
+                <div class="panel ai-panel">
+                    <div class="panel-header">
+                        <div class="panel-title-wrap">
+                            <h2>Traffic Fingerprint</h2>
+                            <span class="panel-sub" id="fingerprintTarget">Target: Junction J2</span>
+                        </div>
+                        <span class="status-pill status-critical" id="fingerprintSeverity">CRITICAL</span>
+                    </div>
+
+                    <div class="fingerprint-hero">
+                        <div class="fp-type-title" id="fingerprintLabel">RAPID QUEUE BUILD-UP</div>
+                        <div class="fp-confidence" id="fingerprintConfidence">Confidence: 89% (Geotab Pattern Match)</div>
+                    </div>
+
+                    <div class="evidence-block">
+                        <div class="evidence-header">EVIDENCE & ROOT DRIVERS</div>
+                        <div class="evidence-list" id="fingerprintEvidenceList">
+                            <!-- Dynamic Evidence Items -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. AI PREDICTION PANEL -->
                 <div class="panel ai-panel">
                     <div class="panel-header">
                         <div class="panel-title-wrap">
@@ -205,43 +282,25 @@
                             <span class="detail-val danger-text" id="predQueueDelta">+34.0 m</span>
                         </div>
                         <div class="pred-detail-row">
-                            <span class="detail-label">Traffic Fingerprint</span>
-                            <span class="detail-val highlight-cyan" id="predFingerprint">INCIDENT-LIKE (91%)</span>
-                        </div>
-                        <div class="pred-detail-row">
-                            <span class="detail-label">Spillover Cascade Target</span>
-                            <span class="detail-val amber-text" id="predSpillover">J1 (73% in 4 min)</span>
+                            <span class="detail-label">Isolation Forest Score</span>
+                            <span class="detail-val highlight-cyan" id="anomScoreVal">0.91 (Anomaly Detected)</span>
                         </div>
                     </div>
 
                     <div class="responsible-ai-note">
                         <span class="note-icon">ℹ️</span>
-                        <span>Estimates derived from XGBoost model trained on Geotab historical baseline patterns.</span>
+                        <span>Probabilistic forecast computed from XGBoost trained on Geotab baseline distributions.</span>
                     </div>
                 </div>
 
-                <!-- SYSTEM STATUS & DATA HEALTH PANEL -->
-                <div class="panel status-panel">
+                <!-- 4. REALTIME INTELLIGENCE EVENT FEED -->
+                <div class="panel event-feed-panel">
                     <div class="panel-header">
-                        <h2>Infrastructure & Providers</h2>
+                        <h2>Intelligence Event Feed</h2>
+                        <span class="live-pulse-dot"></span>
                     </div>
-                    <div class="sys-list">
-                        <div class="sys-item">
-                            <span class="sys-name">FastAPI Decision Server</span>
-                            <span class="sys-status green-text" id="sysApi">ONLINE (8000)</span>
-                        </div>
-                        <div class="sys-item">
-                            <span class="sys-name">Traffic Intelligence Stream</span>
-                            <span class="sys-status green-text" id="sysTraffic">LIVE NORMALIZED</span>
-                        </div>
-                        <div class="sys-item">
-                            <span class="sys-name">Geotab Dataset Provenance</span>
-                            <span class="sys-status highlight-cyan">VALIDATED</span>
-                        </div>
-                        <div class="sys-item">
-                            <span class="sys-name">Digital Twin Simulator Bridge</span>
-                            <span class="sys-status amber-text" id="sysSim">STANDBY (PHASE 1)</span>
-                        </div>
+                    <div class="event-feed-list" id="eventFeedList">
+                        <!-- Dynamic Event Items -->
                     </div>
                 </div>
 
@@ -251,7 +310,7 @@
 
     </div>
 
-    <!-- P0 Clean Frontend Scripts -->
+    <!-- P1 Intelligence Frontend Scripts -->
     <script src="app.js"></script>
 </body>
 </html>
