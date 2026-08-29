@@ -79,8 +79,27 @@ class TrafficStateBuilder:
         is_peak = int(hour in [7, 8, 9, 16, 17, 18])
         is_night = int(hour in [22, 23, 0, 1, 2, 3, 4, 5])
         
+        inter_id = int(context.get("IntersectionId", 0))
+        path_str = str(context.get("Path", f"{entry_st}_{entry_h}_{exit_st}_{exit_h}"))
+        
+        # Load frequency encoders if available
+        inter_freq = 0
+        path_freq = 0
+        freq_file = PROJECT_ROOT / "models" / "prediction" / "frequency_encoders.json"
+        if freq_file.exists():
+            try:
+                with open(freq_file, "r") as f:
+                    f_data = json.load(f)
+                    inter_freq = f_data.get("intersection_freq", {}).get(str(inter_id), 0)
+                    path_freq = f_data.get("path_freq", {}).get(path_str, 0)
+            except Exception:
+                pass
+                
+        inter_log_freq = float(context.get("intersection_log_freq", np.log1p(inter_freq)))
+        path_log_freq = float(context.get("path_log_freq", np.log1p(path_freq)))
+        
         return {
-            "IntersectionId": int(context.get("IntersectionId", 0)),
+            "IntersectionId": inter_id,
             "Latitude": float(context.get("Latitude", 33.75)),
             "Longitude": float(context.get("Longitude", -84.38)),
             "entry_heading_deg": entry_deg,
@@ -99,8 +118,8 @@ class TrafficStateBuilder:
             "is_night": is_night,
             "is_weekend": weekend,
             "city_encoded": city_code,
-            "intersection_log_freq": float(context.get("intersection_log_freq", 5.0)),
-            "path_log_freq": float(context.get("path_log_freq", 3.0)),
+            "intersection_log_freq": inter_log_freq,
+            "path_log_freq": path_log_freq,
             # Raw attributes for metadata
             "_turn_type_str": turn_str,
             "_city_str": city,

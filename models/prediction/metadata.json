@@ -1,8 +1,10 @@
 {
   "model_type": "XGBoostRegressor",
   "model_version": "1.0.0",
-  "trained_date": "2026-08-29 13:34:39",
+  "trained_date": "2026-08-29 13:58:02",
   "dataset_rows": 856387,
+  "train_rows": 685109,
+  "val_rows": 171278,
   "random_seed": 42,
   "feature_columns": [
     "IntersectionId",
@@ -34,5 +36,7 @@
     "learning_rate": 0.08,
     "tree_method": "hist"
   },
-  "anti_leakage_verified": true
+  "frequency_encoders_file": "C:\\Users\\shang\\OneDrive\\Desktop\\traffic AI\\models\\prediction\\frequency_encoders.json",
+  "anti_leakage_verified": true,
+  "target_description": "Contextual median stopped time prediction (seconds). Not a 5-minute temporal forecast."
 }
