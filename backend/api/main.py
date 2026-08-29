@@ -1,7 +1,8 @@
 """
 FastAPI Main Application for NEXUS-TWIN Urban Traffic Intelligence.
 Exposes clean REST and Server-Sent Events (SSE) endpoints connecting ML Models,
-Network Intelligence, Digital Twin Simulations, and Multi-Agent Decision Workflows.
+Network Intelligence, Digital Twin Simulations, Multi-Agent Decision Workflows,
+and the Unified Demo Pipeline for the AI Command Center.
 """
 
 import os
@@ -32,6 +33,7 @@ from backend.contracts.simulation import (
 )
 from backend.contracts.recommendation import AIRecommendationResponse
 from backend.contracts.decision import HumanDecisionRequest, HumanDecisionResponse
+from backend.contracts.demo import DemoAnalysisRequest, DemoAnalysisResponse
 
 # Intelligence Services
 from intelligence.traffic.state_builder import TrafficStateBuilder
@@ -42,6 +44,7 @@ from intelligence.network.metrics.network_metrics import NetworkIntelligenceServ
 from simulation.scenarios.scenario_model import ScenarioCatalog
 from simulation.engine.digital_twin_engine import DigitalTwinEngine
 from backend.agents.graph_workflow import DecisionWorkflowOrchestrator
+from backend.services.demo_pipeline import DemoPipelineService
 
 app = FastAPI(
     title="NEXUS-TWIN Traffic Decision Intelligence API",
@@ -64,6 +67,11 @@ anomaly_detector = AnomalyDetector()
 predictor = TrafficPredictor()
 orchestrator = DecisionWorkflowOrchestrator()
 digital_twin = DigitalTwinEngine()
+demo_service = DemoPipelineService()
+
+# -----------------------------------------------------------------------------
+# 0. Health & System Observability Endpoints
+# -----------------------------------------------------------------------------
 
 @app.get("/health")
 def health_check():
@@ -76,8 +84,40 @@ def health_check():
         "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     }
 
+@app.get("/api/v1/system/status")
+def system_status():
+    return {
+        "backend_status": "OPERATIONAL",
+        "service_version": "1.0.0",
+        "ml_model_loaded": predictor.model is not None,
+        "isolation_forest_loaded": anomaly_detector.iso_forest is not None,
+        "network_intelligence_available": True,
+        "digital_twin_engine_available": True,
+        "agent_orchestrator_available": True,
+        "dataset_connected": "BigQuery-Geotab Empirical Telematics (856,387 records)",
+        "supported_cities": ["Philadelphia", "Boston", "Atlanta", "Chicago"],
+        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    }
+
 # -----------------------------------------------------------------------------
-# 1. Traffic Intelligence Endpoints
+# 1. Canonical Unified Demo Endpoint (Primary for Frontend Command Center)
+# -----------------------------------------------------------------------------
+
+@app.post("/api/v1/demo/analyze", response_model=DemoAnalysisResponse)
+def analyze_demo_scenario(req: DemoAnalysisRequest):
+    """
+    Unified end-to-end endpoint for the frontend Command Center.
+    Executes Geotab Traffic State -> ML Predictor -> Anomaly -> Fingerprint ->
+    Network Shockwave -> Domino Chain -> Candidate Strategies -> Digital Twin ->
+    Safety Critic -> Recommendation -> Explainability.
+    """
+    try:
+        return demo_service.execute_pipeline(req)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# -----------------------------------------------------------------------------
+# 2. Traffic Intelligence Endpoints
 # -----------------------------------------------------------------------------
 
 @app.post("/api/v1/traffic/state")
@@ -92,7 +132,6 @@ def get_traffic_state(req: TrafficStateRequest):
 @app.post("/api/v1/traffic/anomaly", response_model=AnomalyEvaluationResponse)
 def evaluate_anomaly(req: AnomalyEvaluationRequest):
     try:
-        ctx = req.model_dump()
         base_stats = state_builder.baseline.get_baseline(req.city, req.intersection_id, req.hour, req.weekend, req.entry_heading)
         from intelligence.anomaly.detector import calculate_statistical_deviations
         devs = calculate_statistical_deviations(req.observed_wait_s, req.observed_dist_m, base_stats)
@@ -132,7 +171,7 @@ def diagnose_fingerprint(req: AnomalyEvaluationRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 # -----------------------------------------------------------------------------
-# 2. Network Intelligence & Domino Endpoints
+# 3. Network Intelligence & Domino Endpoints
 # -----------------------------------------------------------------------------
 
 @app.get("/api/v1/network/graph", response_model=GraphSnapshot)
@@ -151,7 +190,7 @@ def get_network_intelligence(
     return svc.analyze_network(focus_node_id=focus_node_id, hour=hour, weekend=weekend)
 
 # -----------------------------------------------------------------------------
-# 3. Digital Twin Simulation Endpoints
+# 4. Digital Twin Simulation Endpoints
 # -----------------------------------------------------------------------------
 
 @app.get("/api/v1/simulation/scenarios")
@@ -176,7 +215,7 @@ def evaluate_digital_twin_scenario(
     return digital_twin.evaluate_scenario(scen)
 
 # -----------------------------------------------------------------------------
-# 4. Multi-Agent Decision & Recommendation Endpoints
+# 5. Multi-Agent Decision & Streaming Endpoints
 # -----------------------------------------------------------------------------
 
 @app.post("/api/v1/decision/recommendation", response_model=AIRecommendationResponse)
@@ -190,14 +229,19 @@ def generate_recommendation(
     )
 
 @app.get("/api/v1/decision/stream")
+@app.post("/api/v1/decision/stream")
 def stream_decision_workflow(
     city: str = Query("Philadelphia"),
     intersection_id: int = Query(0),
-    scenario_type: str = Query("INCIDENT_LIKE_DISRUPTION")
+    scenario: str = Query("INCIDENT_LIKE_DISRUPTION"),
+    emergency_mode: bool = Query(False)
 ):
-    """Server-Sent Events (SSE) endpoint for progressive agent step visualization."""
+    """Server-Sent Events (SSE) endpoint for progressive 12-stage pipeline event streaming."""
+    req = DemoAnalysisRequest(
+        city=city, intersection_id=intersection_id, scenario=scenario, emergency_mode=emergency_mode
+    )
     return StreamingResponse(
-        orchestrator.stream_workflow_steps(city=city, intersection_id=intersection_id, scenario_type_str=scenario_type),
+        demo_service.stream_pipeline_events(req),
         media_type="text/event-stream"
     )
 
