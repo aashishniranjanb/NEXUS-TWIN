@@ -63,3 +63,11 @@ temp_*.xml
 *.opendb
 *.VC.db
 
+# Dataset files
+data/bigquery-geotab-intersection-congestion.zip
+data/train.csv
+data/test.csv
+data/sample_submission.csv
+data/submission_metric_map
+data/submission_metric_map.json
+data/BigQuery-Dataset-Access.md
