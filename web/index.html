@@ -81,40 +81,54 @@
                 <div class="hud-left brand">
                     <div class="logo-icon">⚡</div>
                     <div>
-                        <h1 id="hudPlayerName" style="font-size: 18px;">Player1</h1>
-                        <span class="sub-title badge mode-badge" id="hudModeBadge" style="background: var(--primary-glow); padding: 2px 6px; border-radius: 4px; color: white;">Free Play</span>
+                        <h1 id="hudPlayerName" style="font-size: 18px; font-weight: 800; font-family: var(--font-heading); letter-spacing: 0.5px;">TRAFFIC COMMAND CENTER</h1>
+                        <span class="sub-title badge mode-badge" id="hudModeBadge" style="background: rgba(33, 199, 232, 0.2); border: 1px solid var(--cyan); padding: 2px 6px; border-radius: 4px; color: var(--cyan); font-weight: bold; font-size: 10px;">J1-J3 CORRIDOR MONITOR</span>
                     </div>
                 </div>
                 <div class="hud-center" style="display: flex; align-items: center; gap: 20px;">
-                    <div class="score-container" style="text-align: center;">
-                        <span style="font-size: 12px; color: var(--text-muted); display: block;">SCORE</span>
+                    <div class="score-container" style="text-align: center; border-right: 1px solid var(--border-color); padding-right: 20px;">
+                        <span style="font-size: 10px; color: var(--text-dim); display: block; font-weight: 800; letter-spacing: 1px;">INTELLIGENCE SCORE</span>
                         <span class="score-value" id="hudScore" style="font-size: 28px; font-weight: 800; color: var(--emerald); text-shadow: 0 0 10px var(--emerald-glow);">0</span>
                     </div>
                     <div class="streak-container hidden" id="hudStreak" style="display: flex; align-items: center; gap: 5px; background: rgba(245,158,11,0.2); padding: 5px 10px; border-radius: 20px; border: 1px solid var(--amber);">
                         <span class="streak-flame">🔥</span>
                         <span class="streak-text" id="hudStreakText" style="color: var(--amber); font-weight: bold;">x1.5</span>
                     </div>
+                    <div style="background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 4px; font-size: 11px;">
+                        DATASET: <span style="color: var(--cyan); font-weight: bold;">GEOTAB CONNECTED</span>
+                    </div>
                 </div>
                 <div class="hud-right header-status">
                     <div style="text-align: right; margin-right: 15px;">
-                        <span style="font-size: 12px; color: var(--text-muted); display: block;">SESSION TIME</span>
+                        <span style="font-size: 10px; color: var(--text-dim); display: block; font-weight: 800; letter-spacing: 1px;">SESSION TIME</span>
                         <span class="session-timer system-time" id="hudTimer" style="font-size: 18px; color: white;">00:00</span>
                     </div>
-                    <button class="btn btn-danger" id="btnEndGame">End Game</button>
+                    <button class="btn btn-danger" id="btnEndGame" style="background: rgba(239, 68, 68, 0.15); border: 1px solid var(--rose); color: var(--rose);">Reset Demo</button>
                 </div>
             </header>
 
-            <!-- Event Alert Banner -->
-            <div class="event-alert hidden" id="eventAlert" style="margin-top: 15px; margin-bottom: 5px;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div class="event-info" style="display: flex; align-items: center; gap: 10px;">
-                        <span class="event-icon" id="eventIcon" style="font-size: 24px;">⚠️</span>
-                        <span class="event-text" id="eventText" style="font-weight: bold; font-size: 16px;">Rush Hour Surge at J2!</span>
+            <!-- Event Alert Banner & Scenario Controls -->
+            <div style="margin-top: 15px; display: flex; gap: 15px; align-items: stretch;">
+                <div class="panel" style="flex: 1.5; padding: 12px 20px; display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 15px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span style="font-size: 24px;">🎮</span>
+                        <div>
+                            <h3 style="font-size: 13px; font-weight: 800; letter-spacing: 0.5px; color: var(--cyan);">INTERACTIVE SCENARIO CONTROLLER</h3>
+                            <span style="font-size: 11px; color: var(--text-dim);" id="currentStepDesc">Normal traffic operations baseline</span>
+                        </div>
                     </div>
-                    <div class="ai-hint" id="aiHint" style="font-size: 12px; color: var(--primary); font-weight: bold; background: rgba(59,130,246,0.1); padding: 4px 8px; border-radius: 4px;">AI Suggests: Extend Green at J2</div>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn" id="btnNextStep" style="background: var(--primary); color: white; padding: 8px 16px;">Next Phase &raquo;</button>
+                        <button class="btn" id="btnRunDemo" style="background: rgba(16, 185, 129, 0.2); border: 1px solid var(--emerald); color: var(--emerald); padding: 8px 16px;">Run J2 Incident Demo</button>
+                    </div>
                 </div>
-                <div class="timer-bar-container" style="margin-top: 8px;">
-                    <div class="timer-bar" id="eventTimerBar" style="width: 100%;"></div>
+
+                <div class="event-alert hidden" id="eventAlert" style="flex: 1; padding: 12px 20px; display: flex; flex-direction: row; align-items: center; justify-content: space-between; margin-top: 0; margin-bottom: 0;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span class="event-icon" id="eventIcon" style="font-size: 20px;">⚠️</span>
+                        <span class="event-text" id="eventText" style="font-weight: bold; font-size: 13px;">Congestion detected</span>
+                    </div>
+                    <div class="ai-hint" id="aiHint" style="font-size: 11px; color: var(--rose); font-weight: bold; background: rgba(239,68,68,0.1); padding: 4px 8px; border-radius: 4px;">SPILLOVER RISK</div>
                 </div>
             </div>
 
@@ -268,6 +282,16 @@
                             <!-- Populated Dynamically -->
                         </tbody>
                     </table>
+                </div>
+            </section>
+
+            <!-- Traffic Crisis Timeline -->
+            <section class="panel" style="margin-top: 20px;">
+                <div class="panel-header">
+                    <h2>Traffic Crisis Pipeline Timeline</h2>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; overflow-x: auto; gap: 10px;" id="timelineSteps">
+                    <!-- Steps populated dynamically by JS -->
                 </div>
             </section>
 

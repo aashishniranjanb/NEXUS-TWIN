@@ -324,57 +324,249 @@ function updateHUD() {
     });
 }
 
-async function fetchEvent() {
-    if(!gameState.session_active || currentState !== STATES.PLAYING) return;
-    
-    try {
-        const res = await fetch(`${API_BASE}/game/event`);
-        if(res.ok) {
-            const ev = await res.json();
-            if(ev && !ev.resolved && !ev.expired) {
-                gameState.active_event = ev;
-                triggerEvent(ev);
-            }
+// Interactive Scenario Controller Timeline States
+const TIMELINE_STEPS = [
+    { id: 'normal', name: 'NORMAL', desc: 'Normal traffic operations baseline' },
+    { id: 'anomaly', name: 'ANOMALY', desc: 'J2 queue accumulates rapidly' },
+    { id: 'fingerprint', name: 'FINGERPRINT', desc: 'Incident pattern fingerprint matched' },
+    { id: 'prediction', name: 'PREDICTION', desc: 'XGBoost forecasts 5-min congestion probability' },
+    { id: 'domino', name: 'DOMINO EFFECT', desc: 'Congestion domino spreading toward J1/J3' },
+    { id: 'recommendation', name: 'RECOMMENDATION', desc: 'AI Copilot suggests Bypass Diversion' },
+    { id: 'simulation', name: 'SIMULATION', desc: 'Digital Twin evaluates what-if candidates' },
+    { id: 'decision', name: 'HUMAN DECISION', desc: 'Awaiting operator approval/override' },
+    { id: 'outcome', name: 'OUTCOME', desc: 'Evaluation report: before vs after' }
+];
+
+let currentTimelineIndex = 0;
+let demoTimer = null;
+
+// Populate Timeline Steps visual nodes in HTML
+function renderTimeline() {
+    const container = document.getElementById('timelineSteps');
+    if (!container) return;
+    container.innerHTML = '';
+    TIMELINE_STEPS.forEach((step, idx) => {
+        const stepDiv = document.createElement('div');
+        stepDiv.style.flex = '1';
+        stepDiv.style.padding = '8px';
+        stepDiv.style.textAlign = 'center';
+        stepDiv.style.borderRadius = '4px';
+        stepDiv.style.fontSize = '10px';
+        stepDiv.style.fontWeight = 'bold';
+        
+        let bgColor = 'rgba(255, 255, 255, 0.03)';
+        let border = '1px solid var(--border-color)';
+        let textColor = 'var(--text-dim)';
+        
+        if (idx === currentTimelineIndex) {
+            bgColor = 'rgba(33, 199, 232, 0.2)';
+            border = '1px solid var(--cyan)';
+            textColor = 'var(--cyan)';
+        } else if (idx < currentTimelineIndex) {
+            bgColor = 'rgba(16, 185, 129, 0.1)';
+            border = '1px solid var(--emerald)';
+            textColor = 'var(--emerald)';
         }
-    } catch(e) {
-        // Fallback random event generator (10% chance every 2s)
-        if(Math.random() < 0.1 && !gameState.active_event) {
-            let t = ['rush_hour', 'emergency', 'accident'][Math.floor(Math.random()*3)];
-            let j = ['J1', 'J2', 'J3'][Math.floor(Math.random()*3)];
-            let ev = { event_type: t, target_junction: j, severity: t==='emergency'?'critical':'high', description: `Detected ${t} at ${j}!`, time_limit_s: 30, remaining_s: 30 };
-            gameState.active_event = ev;
-            triggerEvent(ev);
-        }
-    }
+        
+        stepDiv.style.backgroundColor = bgColor;
+        stepDiv.style.border = border;
+        stepDiv.style.color = textColor;
+        stepDiv.innerHTML = `<div>${step.id.toUpperCase()}</div><div style="font-size: 8px; font-weight: normal; margin-top: 2px;">${step.name}</div>`;
+        container.appendChild(stepDiv);
+    });
+
+    // Update Scenario Desc
+    const currentStep = TIMELINE_STEPS[currentTimelineIndex];
+    document.getElementById('currentStepDesc').textContent = currentStep.desc;
 }
 
-function triggerEvent(ev) {
-    currentState = STATES.EVENT_ACTIVE;
-    
-    let icon = "⚠️";
-    if(ev.event_type === 'emergency') icon = "🚑";
-    if(ev.event_type === 'accident') icon = "💥";
-    
-    document.getElementById('eventIcon').textContent = icon;
-    document.getElementById('eventText').textContent = ev.description;
-    
-    views.alert.className = `event-alert severity-${ev.severity}`;
-    
-    if(gameState.difficulty === 'easy') {
-        document.getElementById('aiHint').classList.remove('hidden');
-        document.getElementById('aiHint').textContent = `AI Suggests: Focus on ${ev.target_junction}`;
-    } else {
-        document.getElementById('aiHint').classList.add('hidden');
+// Interactive Controller: Apply step parameters on telemetry indicators
+function applyTimelineStep(idx) {
+    currentTimelineIndex = idx;
+    renderTimeline();
+
+    // Default telemetry structure to simulate pipeline values
+    let telemetry = {
+        avg_waiting_time_s: 0.24,
+        queue_length_m: 20.0,
+        avg_speed_kmh: 39.6,
+        active_vehicles: 124,
+        probability: 0.12,
+        will_congest: false,
+        predicted_q: 20.0,
+        fingerprint: "NORMAL",
+        similarity: 0.76,
+        rec_strategy: "do_nothing",
+        confidence: 0.85
+    };
+
+    switch (TIMELINE_STEPS[idx].id) {
+        case 'normal':
+            break;
+        case 'anomaly':
+            telemetry.queue_length_m = 32.5;
+            telemetry.avg_speed_kmh = 28.4;
+            telemetry.avg_waiting_time_s = 0.38;
+            telemetry.fingerprint = "RECURRING CONGESTION";
+            break;
+        case 'fingerprint':
+            telemetry.queue_length_m = 44.2;
+            telemetry.avg_speed_kmh = 21.0;
+            telemetry.avg_waiting_time_s = 0.52;
+            telemetry.fingerprint = "INCIDENT-LIKE";
+            telemetry.similarity = 0.91;
+            break;
+        case 'prediction':
+            telemetry.queue_length_m = 44.2;
+            telemetry.avg_speed_kmh = 21.0;
+            telemetry.avg_waiting_time_s = 0.52;
+            telemetry.fingerprint = "INCIDENT-LIKE";
+            telemetry.similarity = 0.91;
+            telemetry.probability = 0.87;
+            telemetry.will_congest = true;
+            telemetry.predicted_q = 64.0;
+            break;
+        case 'domino':
+        case 'recommendation':
+            telemetry.queue_length_m = 44.2;
+            telemetry.avg_speed_kmh = 21.0;
+            telemetry.avg_waiting_time_s = 0.52;
+            telemetry.fingerprint = "INCIDENT-LIKE";
+            telemetry.similarity = 0.91;
+            telemetry.probability = 0.87;
+            telemetry.will_congest = true;
+            telemetry.predicted_q = 64.0;
+            telemetry.rec_strategy = "diversion";
+            telemetry.confidence = 0.91;
+            break;
+        case 'simulation':
+        case 'decision':
+            telemetry.queue_length_m = 44.2;
+            telemetry.avg_speed_kmh = 21.0;
+            telemetry.avg_waiting_time_s = 0.52;
+            telemetry.fingerprint = "INCIDENT-LIKE";
+            telemetry.similarity = 0.91;
+            telemetry.probability = 0.87;
+            telemetry.will_congest = true;
+            telemetry.predicted_q = 64.0;
+            telemetry.rec_strategy = "diversion";
+            telemetry.confidence = 0.91;
+            break;
+        case 'outcome':
+            telemetry.queue_length_m = 12.0;
+            telemetry.avg_speed_kmh = 42.5;
+            telemetry.avg_waiting_time_s = 0.08;
+            telemetry.fingerprint = "NORMAL";
+            telemetry.rec_strategy = "diversion";
+            break;
     }
+
+    // Update frontend metrics elements
+    document.getElementById("metricDelay").textContent = telemetry.avg_waiting_time_s.toFixed(2) + "s";
+    document.getElementById("metricQueue").textContent = telemetry.queue_length_m.toFixed(1) + "m";
+    document.getElementById("metricSpeed").textContent = telemetry.avg_speed_kmh.toFixed(1) + "km/h";
+    document.getElementById("metricVehicles").textContent = telemetry.active_vehicles;
+
+    // Update Forecast Panel
+    document.getElementById('forecastProb').textContent = Math.round(telemetry.probability * 100) + "%";
+    document.getElementById('forecastQueue').textContent = telemetry.predicted_q.toFixed(1) + "m";
+    const trendEl = document.getElementById('forecastTrend');
+    if (telemetry.will_congest) {
+        trendEl.textContent = "▲ CRITICAL";
+        trendEl.style.color = "var(--rose)";
+        document.getElementById('eventAlert').classList.remove('hidden');
+    } else {
+        trendEl.textContent = "▼ STABLE";
+        trendEl.style.color = "var(--emerald)";
+        document.getElementById('eventAlert').classList.add('hidden');
+    }
+
+    // Update Similarity Index
+    document.getElementById('trafficFingerprintBadge').textContent = `Fingerprint: ${telemetry.fingerprint}`;
+    document.getElementById('fingerprintSimilarity').textContent = `Pattern match: ${Math.round(telemetry.similarity * 100)}%`;
     
-    document.getElementById('actionTargetJunction').value = ev.target_junction;
+    const fpFactors = document.getElementById('fingerprintFactors');
+    fpFactors.innerHTML = '';
+    const mockFactors = {
+        "Directional Inflow": telemetry.queue_length_m > 30 ? 0.82 : 0.35,
+        "Waiting Time Dev": telemetry.queue_length_m > 30 ? 0.91 : 0.12,
+        "Speed Collapse": telemetry.queue_length_m > 30 ? 0.78 : 0.08,
+        "Queue Rate Delta": telemetry.queue_length_m > 30 ? 0.85 : 0.15
+    };
+    Object.entries(mockFactors).forEach(([k, v]) => {
+        const row = document.createElement('div');
+        row.style.display = 'flex';
+        row.style.justifyContent = 'space-between';
+        row.style.fontSize = '12px';
+        row.innerHTML = `<span style="color: var(--text-muted);">${k}</span><span style="font-weight: bold; color: var(--text-main);">${Math.round(v * 100)}%</span>`;
+        fpFactors.appendChild(row);
+    });
+
+    // Update AI Copilot Advice
+    document.getElementById('copilotRecommends').textContent = `RECOMMENDED: ${telemetry.rec_strategy.toUpperCase()}`;
+    document.getElementById('copilotConfidence').textContent = `Confidence: ${Math.round(telemetry.confidence * 100)}%`;
+    
+    if (telemetry.rec_strategy === 'do_nothing') {
+        document.getElementById('copilotExplanation').textContent = "Arterial corridor junctions flow within normal density parameters.";
+    } else {
+        document.getElementById('copilotExplanation').textContent = "Abnormal eastbound queue growth on J2 suggests incident blockage. Recommends bypass diversion to avoid gridlock propagating upstream to J1.";
+    }
+
+    // Update Digital Twin Simulator Matrix Rows
+    const tbody = document.getElementById('dtSimulatorBody');
+    tbody.innerHTML = '';
+    const mocksCands = [
+        { name: "DIVERT TRAFFIC", delay: -31.0, queue: -30.0, em: -14.2, eta: 0.0, score: 0.915, best: true },
+        { name: "EXTEND GREEN", delay: -18.0, queue: -12.0, em: -8.1, eta: 4.2, score: 0.824, best: false },
+        { name: "EMERGENCY PRIORITY", delay: 8.0, queue: 12.0, em: 5.0, eta: -48.0, score: 0.650, best: false },
+        { name: "DO NOTHING", delay: 42.0, queue: 61.0, em: 35.0, eta: 24.5, score: 0.210, best: false }
+    ];
+    mocksCands.forEach(c => {
+        const tr = document.createElement('tr');
+        tr.style.borderBottom = '1px solid var(--border-color)';
+        tr.style.backgroundColor = c.best ? 'rgba(59, 130, 246, 0.1)' : 'transparent';
+        const delayCol = c.delay <= 0 ? 'var(--emerald)' : 'var(--rose)';
+        const queueCol = c.queue <= 0 ? 'var(--emerald)' : 'var(--rose)';
+        
+        tr.innerHTML = `
+            <td style="padding: 10px; font-weight: bold; color: var(--text-main);">${c.name} ${c.best ? '★' : ''}</td>
+            <td style="padding: 10px; color: ${delayCol};">${c.delay > 0 ? '+' : ''}${c.delay.toFixed(1)}%</td>
+            <td style="padding: 10px; color: ${queueCol};">${c.queue > 0 ? '+' : ''}${c.queue.toFixed(1)}%</td>
+            <td style="padding: 10px; color: var(--text-main);">${c.eta > 0 ? '+' : ''}${c.eta.toFixed(1)}s</td>
+            <td style="padding: 10px; color: ${c.em <= 0 ? 'var(--emerald)' : 'var(--rose)'};">${c.em > 0 ? '+' : ''}${c.em.toFixed(1)}%</td>
+            <td style="padding: 10px; font-weight: bold; color: var(--cyan);">${c.score.toFixed(3)}</td>
+        `;
+        tbody.appendChild(tr);
+    });
 }
+
+// Scenario stepping bindings
+document.getElementById('btnNextStep').addEventListener('click', () => {
+    let nextIdx = (currentTimelineIndex + 1) % TIMELINE_STEPS.length;
+    applyTimelineStep(nextIdx);
+});
+
+document.getElementById('btnRunDemo').addEventListener('click', () => {
+    if (demoTimer) clearInterval(demoTimer);
+    let step = 0;
+    applyTimelineStep(0);
+    demoTimer = setInterval(() => {
+        step++;
+        if (step >= TIMELINE_STEPS.length) {
+            clearInterval(demoTimer);
+        } else {
+            applyTimelineStep(step);
+        }
+    }, 2500); // Step scenario automatically every 2.5s
+});
 
 // Telemetry & Canvas Logic (kept similar to original)
 async function fetchStateData() {
+    // If timeline is not in 'normal' state, let manual/demo scenario overwrite live state polling
+    if (currentTimelineIndex !== 0) return;
+    
     try {
         const targetJunction = document.getElementById('actionTargetJunction').value || 'J2';
-        // Post current evaluation parameters to get live multi-agent decision loop response
         const evalRes = await fetch(`${API_BASE}/evaluate`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -389,7 +581,6 @@ async function fetchStateData() {
             const agentData = await evalRes.json();
             updateMultiAgentUI(agentData);
             
-            // Re-render telemetry cards
             if (agentData.situation) {
                 const sit = agentData.situation;
                 document.getElementById("metricDelay").textContent = sit.avg_waiting_time_s.toFixed(2) + "s";
@@ -416,7 +607,6 @@ async function fetchStateData() {
 function updateMultiAgentUI(data) {
     if (!data) return;
 
-    // 1. Forecast & Congestion alerts
     if (data.prediction) {
         const pred = data.prediction;
         const probPct = Math.round(pred.congestion_probability * 100);
@@ -432,13 +622,11 @@ function updateMultiAgentUI(data) {
         }
     }
 
-    // 2. Anomaly Fingerprint Match
     if (data.fingerprint) {
         const fp = data.fingerprint;
         document.getElementById('trafficFingerprintBadge').textContent = `Fingerprint: ${fp.pattern_type}`;
         document.getElementById('fingerprintSimilarity').textContent = `Pattern match: ${Math.round(fp.dataset_similarity_score * 100)}%`;
         
-        // Populate factors list
         const factorsContainer = document.getElementById('fingerprintFactors');
         factorsContainer.innerHTML = '';
         Object.entries(fp.factors).forEach(([key, val]) => {
@@ -451,7 +639,6 @@ function updateMultiAgentUI(data) {
         });
     }
 
-    // 3. AI Copilot Advice
     if (data.recommendation) {
         const rec = data.recommendation;
         document.getElementById('copilotRecommends').textContent = `RECOMMENDED: ${rec.strategy.replace('_', ' ').toUpperCase()}`;
@@ -459,7 +646,6 @@ function updateMultiAgentUI(data) {
         document.getElementById('copilotConfidence').textContent = `Confidence: ${Math.round(rec.confidence * 100)}%`;
     }
 
-    // 4. Digital Twin Simulator Matrix Rows
     if (data.candidates) {
         const tbody = document.getElementById('dtSimulatorBody');
         tbody.innerHTML = '';
@@ -468,7 +654,6 @@ function updateMultiAgentUI(data) {
             tr.style.borderBottom = '1px solid var(--border-color)';
             tr.style.backgroundColor = c.is_best ? 'rgba(59, 130, 246, 0.1)' : 'transparent';
             
-            // Colour coding deltas
             const delayColor = c.delay_change_pct <= 0 ? 'var(--emerald)' : 'var(--rose)';
             const queueColor = c.queue_change_pct <= 0 ? 'var(--emerald)' : 'var(--rose)';
             const emColor = c.emissions_change_pct <= 0 ? 'var(--emerald)' : 'var(--rose)';
@@ -514,15 +699,19 @@ function renderCanvas() {
         ctx.fillRect(x - 20, 30, 40, h - 60);
     });
 
-    // Event Highlight
-    if (gameState.active_event && gameState.active_event.target_junction) {
-        const targetX = jx[gameState.active_event.target_junction];
-        ctx.strokeStyle = gameState.active_event.severity === 'critical' ? 'rgba(239, 68, 68, 0.8)' : 'rgba(245, 158, 11, 0.8)';
+    // Event Highlight / Congestion Spreading
+    if (currentTimelineIndex > 0) {
+        const targetX = jx.J2;
+        let scale = 1;
+        if (currentTimelineIndex === 1) scale = 1.1; // Anomaly alert
+        if (currentTimelineIndex > 3) scale = 1.5;   // Spillover spreads
+        
+        ctx.strokeStyle = currentTimelineIndex > 3 ? 'rgba(239, 68, 68, 0.8)' : 'rgba(245, 158, 11, 0.8)';
         ctx.lineWidth = 3;
         ctx.setLineDash([8, 8]);
         let tOffset = (Date.now() / 50) % 16;
         ctx.lineDashOffset = -tOffset;
-        ctx.strokeRect(targetX - 40, centerY - 40, 80, 80);
+        ctx.strokeRect(targetX - 40 * scale, centerY - 40 * scale, 80 * scale, 80 * scale);
         ctx.setLineDash([]);
     }
 
@@ -557,9 +746,14 @@ function renderCanvas() {
         ctx.fillStyle = "#f59e0b"; ctx.fillRect(x - 40, y + 36, barW || 0, 8);
     }
 
-    drawQueueBar(jx.J1, centerY, liveData?.junctions?.J1?.total_queue_m || 20.0);
-    drawQueueBar(jx.J2, centerY, liveData?.junctions?.J2?.total_queue_m || 30.0);
-    drawQueueBar(jx.J3, centerY, liveData?.junctions?.J3?.total_queue_m || 15.0);
+    let q1 = 20.0, q2 = 30.0, q3 = 15.0;
+    if (currentTimelineIndex === 1) { q2 = 45.0; }
+    if (currentTimelineIndex > 1) { q2 = 65.0; q1 = 35.0; }
+    if (currentTimelineIndex === 8) { q1 = 10.0; q2 = 12.0; q3 = 8.0; } // Cleared outcome
+
+    drawQueueBar(jx.J1, centerY, q1);
+    drawQueueBar(jx.J2, centerY, q2);
+    drawQueueBar(jx.J3, centerY, q3);
 
     // Vehicles
     const t = Date.now() / 300.0;
@@ -567,6 +761,16 @@ function renderCanvas() {
     for (let i = 0; i < 12; i++) {
         const vx = (40 + (t * 40 + i * 65) % (w - 80));
         ctx.fillRect(vx, centerY - 6, 12, 6);
+    }
+
+    // Highlight Ambulance priority corridor if active
+    if (currentTimelineIndex >= 7) {
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.8)";
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(jx.J1, centerY);
+        ctx.lineTo(jx.J3, centerY);
+        ctx.stroke();
     }
 
     if (gameState.session_active) requestAnimationFrame(renderCanvas);
@@ -581,7 +785,6 @@ async function fetchLeaderboard() {
             populateLeaderboard(data);
         }
     } catch(e) {
-        // Fallback mock leaderboard
         populateLeaderboard([
             {player: "TrafficGod", score: 14500, mode: "challenge"},
             {player: "SUMOMaster", score: 12300, mode: "free_play"},
@@ -604,3 +807,6 @@ function populateLeaderboard(data) {
 
 // Initial draw
 renderCanvas();
+renderTimeline();
+applyTimelineStep(0);
+
