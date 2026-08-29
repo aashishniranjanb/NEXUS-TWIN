@@ -34,6 +34,7 @@ from backend.contracts.simulation import (
 from backend.contracts.recommendation import AIRecommendationResponse
 from backend.contracts.decision import HumanDecisionRequest, HumanDecisionResponse
 from backend.contracts.demo import DemoAnalysisRequest, DemoAnalysisResponse
+from backend.contracts.routing import RouteOptimizationRequest, RouteOptimizationResponse
 
 # Intelligence Services
 from intelligence.traffic.state_builder import TrafficStateBuilder
@@ -45,6 +46,7 @@ from simulation.scenarios.scenario_model import ScenarioCatalog
 from simulation.engine.digital_twin_engine import DigitalTwinEngine
 from backend.agents.graph_workflow import DecisionWorkflowOrchestrator
 from backend.services.demo_pipeline import DemoPipelineService
+from intelligence.network.routing.optimizer import AIDynamicRouteOptimizer
 
 app = FastAPI(
     title="NEXUS-TWIN Traffic Decision Intelligence API",
@@ -68,6 +70,7 @@ predictor = TrafficPredictor()
 orchestrator = DecisionWorkflowOrchestrator()
 digital_twin = DigitalTwinEngine()
 demo_service = DemoPipelineService()
+route_optimizer = AIDynamicRouteOptimizer()
 
 # -----------------------------------------------------------------------------
 # 0. Health & System Observability Endpoints
@@ -113,6 +116,19 @@ def analyze_demo_scenario(req: DemoAnalysisRequest):
     """
     try:
         return demo_service.execute_pipeline(req)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/v1/routing/optimize", response_model=RouteOptimizationResponse)
+def optimize_route(req: RouteOptimizationRequest):
+    """
+    AI Dynamic Route & Spillover Optimizer.
+    Finds optimal and alternative routes taking travel time, congestion levels,
+    and downstream spillover shockwaves into account.
+    Supports emergency preemption routing.
+    """
+    try:
+        return route_optimizer.optimize_route(req)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
